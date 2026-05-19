@@ -49,6 +49,7 @@ GET	/toggle-rule	Toggles rule active/inactive
 git clone
 
 2. Backend Setup (Spring Boot)
+
 cd backend Configure application.properties
 
 server.port=8080
@@ -59,6 +60,12 @@ salesforce.redirect.uri=http://localhost:8080/callback
 salesforce.auth.url=https://login.salesforce.com/services/oauth2/authorize
 salesforce.token.url=https://login.salesforce.com/services/oauth2/token
 
+### Set environment variables before running:
+
+Windows PowerShell:
+
+setx SALESFORCE_CLIENT_ID "your_client_id"
+setx SALESFORCE_CLIENT_SECRET "your_client_secret"
 Run Backend mvn spring-boot:run
 
 Backend runs at:
@@ -100,8 +107,4 @@ Without login, validation rules API will fail
 
 
 
-To run this project locally, set the following environment variables before starting the backend:
 
-SALESFORCE_CLIENT_ID=3MVG97L7PWbPq6UwCL.6YvIjV90HG23keKInIpqpKBwC0bwHPdUdg8OJmqYkTHDhnnS4OUmE5QdfydRcRoTaQ 
-
-SALESFORCE_CLIENT_SECRET=22DEEC84B5CEC639359D4E964BE0D0516D61C3F28686DA0F34160823B6EECE07
