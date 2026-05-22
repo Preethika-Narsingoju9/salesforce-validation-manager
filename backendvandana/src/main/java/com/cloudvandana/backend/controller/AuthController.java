@@ -50,8 +50,7 @@ public class AuthController {
 
     // LOGIN → Salesforce OAuth page
     @GetMapping("/login")
-    public void login(HttpServletResponse response,
-                      HttpSession session) throws Exception {
+    public void login(HttpServletResponse response) throws Exception {
 
         SecureRandom random = new SecureRandom();
         byte[] bytes = new byte[32];
@@ -62,7 +61,7 @@ public class AuthController {
                 .encodeToString(bytes);
 
         // store per session (VERY IMPORTANT FIX)
-        session.setAttribute("verifier", verifier);
+        
 
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] digest = md.digest(verifier.getBytes());
@@ -77,6 +76,7 @@ public class AuthController {
                 + "&redirect_uri=" + redirectUri
                 + "&code_challenge=" + challenge
                 + "&code_challenge_method=S256";
+                + "&state=" + verifier;
 
         response.sendRedirect(url);
     }
@@ -84,21 +84,34 @@ public class AuthController {
     
     
     // CALLBACK → exchange token → return to React
+    // @GetMapping("/callback")
+    // public void callback(@RequestParam("code") String code,
+    //                      HttpSession session,
+    //                      HttpServletResponse response) throws Exception {
+
+    //     String verifier = (String) session.getAttribute("verifier");
+
+    //     if (verifier == null) {
+    //         throw new RuntimeException("Code verifier missing. Login again.");
+    //     }
+
+    //     salesforceService.getAccessToken(code, verifier);
+
+    //     response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
+    // }
     @GetMapping("/callback")
-    public void callback(@RequestParam("code") String code,
-                         HttpSession session,
-                         HttpServletResponse response) throws Exception {
+public void callback(@RequestParam("code") String code,
+                     @RequestParam(value = "state", required = false) String verifier,
+                     HttpServletResponse response) throws Exception {
 
-        String verifier = (String) session.getAttribute("verifier");
-
-        if (verifier == null) {
-            throw new RuntimeException("Code verifier missing. Login again.");
-        }
-
-        salesforceService.getAccessToken(code, verifier);
-
-        response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
+    if (verifier == null) {
+        throw new RuntimeException("Verifier missing");
     }
+
+    salesforceService.getAccessToken(code, verifier);
+
+    response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
+}
     
     
 
