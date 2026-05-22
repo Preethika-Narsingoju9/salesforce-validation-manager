@@ -49,116 +49,61 @@ public class AuthController {
     private String authUrl;
 
     // LOGIN → Salesforce OAuth page
-    // @GetMapping("/login")
-    // public void login(HttpServletResponse response) throws Exception {
+    @GetMapping("/login")
+public void login(HttpServletResponse response, HttpSession session) throws Exception {
 
-    //     SecureRandom random = new SecureRandom();
-    //     byte[] bytes = new byte[32];
-    //     random.nextBytes(bytes);
+    // 1. Generate code verifier
+    SecureRandom random = new SecureRandom();
+    byte[] bytes = new byte[32];
+    random.nextBytes(bytes);
 
-    //     String verifier = Base64.getUrlEncoder()
-    //             .withoutPadding()
-    //             .encodeToString(bytes);
+    String verifier = Base64.getUrlEncoder()
+            .withoutPadding()
+            .encodeToString(bytes);
 
-    //     // store per session (VERY IMPORTANT FIX)
-        
+    // 2. Store verifier in session
+    session.setAttribute("pkce_verifier", verifier);
 
-    //     MessageDigest md = MessageDigest.getInstance("SHA-256");
-    //     byte[] digest = md.digest(verifier.getBytes());
+    // 3. Create SHA-256 hash (code challenge)
+    MessageDigest md = MessageDigest.getInstance("SHA-256");
+    byte[] digest = md.digest(verifier.getBytes());
 
-    //     String challenge = Base64.getUrlEncoder()
-    //             .withoutPadding()
-    //             .encodeToString(digest);
+    String challenge = Base64.getUrlEncoder()
+            .withoutPadding()
+            .encodeToString(digest);
 
-    //     String url = authUrl
-    //             + "?response_type=code"
-    //             + "&client_id=" + clientId
-    //             + "&redirect_uri=" + redirectUri
-    //             + "&code_challenge=" + challenge
-    //             + "&code_challenge_method=S256";
-    //             + "&state=" + verifier;
-
-    //     response.sendRedirect(url);
-    // }
-//     @GetMapping("/login")
-// public void login(HttpServletResponse response) throws Exception {
-
-//     SecureRandom random = new SecureRandom();
-//     byte[] bytes = new byte[32];
-//     random.nextBytes(bytes);
-
-//     String verifier = Base64.getUrlEncoder()
-//             .withoutPadding()
-//             .encodeToString(bytes);
-
-//     MessageDigest md = MessageDigest.getInstance("SHA-256");
-//     byte[] digest = md.digest(verifier.getBytes());
-
-//     String challenge = Base64.getUrlEncoder()
-//             .withoutPadding()
-//             .encodeToString(digest);
-
-//     String url = authUrl
-//             + "?response_type=code"
-//             + "&client_id=" + clientId
-//             + "&redirect_uri=" + redirectUri
-//             + "&code_challenge=" + challenge
-//             + "&code_challenge_method=S256"
-//             + "&state=" + verifier;
-
-//     response.sendRedirect(url);
-// }
-@GetMapping("/login")
-public void login(HttpServletResponse response) throws Exception {
-
+    // 4. Redirect to Salesforce login
     String url = authUrl
             + "?response_type=code"
             + "&client_id=" + clientId
             + "&redirect_uri=" + redirectUri
-            + "&state=test";
+            + "&code_challenge=" + challenge
+            + "&code_challenge_method=S256";
 
     response.sendRedirect(url);
 }
     
     
     // CALLBACK → exchange token → return to React
-    // @GetMapping("/callback")
-    // public void callback(@RequestParam("code") String code,
-    //                      HttpSession session,
-    //                      HttpServletResponse response) throws Exception {
-
-    //     String verifier = (String) session.getAttribute("verifier");
-
-    //     if (verifier == null) {
-    //         throw new RuntimeException("Code verifier missing. Login again.");
-    //     }
-
-    //     salesforceService.getAccessToken(code, verifier);
-
-    //     response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
-    // }
-//     @GetMapping("/callback")
-// public void callback(@RequestParam("code") String code,
-//                      @RequestParam(value = "state", required = false) String verifier,
-//                      HttpServletResponse response) throws Exception {
-
-//     if (verifier == null) {
-//         throw new RuntimeException("Verifier missing");
-//     }
-
-//     salesforceService.getAccessToken(code, verifier);
-
-//     response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
-// }
-@GetMapping("/callback")
+    
+    @GetMapping("/callback")
 public void callback(@RequestParam("code") String code,
+                     HttpSession session,
                      HttpServletResponse response) throws Exception {
 
-    salesforceService.getAccessToken(code, "test");
+    // 1. Get verifier back from session
+    String verifier = (String) session.getAttribute("pkce_verifier");
 
+    if (verifier == null) {
+        throw new RuntimeException("PKCE verifier missing. Please login again.");
+    }
+
+    // 2. Exchange token with correct verifier
+    salesforceService.getAccessToken(code, verifier);
+
+    // 3. Redirect to frontend
     response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
 }
-    
     
 
     @GetMapping("/validation-rules")

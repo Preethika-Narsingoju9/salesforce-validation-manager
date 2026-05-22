@@ -48,7 +48,7 @@ public class SalesforceService {
         body.add("client_secret", clientSecret);
         body.add("redirect_uri", redirectUri);
         body.add("code", code);
-        // body.add("code_verifier", codeVerifier);
+        body.add("code_verifier", codeVerifier);
 
         HttpEntity<MultiValueMap<String, String>> request =
                 new HttpEntity<>(body, headers);
