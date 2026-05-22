@@ -80,7 +80,7 @@ public class SalesforceService {
 
         String url = instanceUrl
                 + "/services/data/v62.0/tooling/query/?q="
-                + "SELECT+Id,FullNameName,Active+FROM+ValidationRule";
+                + "SELECT+Id,FullName,Active+FROM+ValidationRule";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
