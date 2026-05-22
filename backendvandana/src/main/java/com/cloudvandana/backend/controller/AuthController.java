@@ -34,36 +34,71 @@ public class AuthController {
     private String authUrl;
 
     // ---------------- LOGIN ----------------
+    // @GetMapping("/login")
+    // public void login(HttpServletResponse response, HttpSession session) throws Exception {
+
+    //     SecureRandom random = new SecureRandom();
+    //     byte[] bytes = new byte[32];
+    //     random.nextBytes(bytes);
+
+    //     String verifier = Base64.getUrlEncoder()
+    //             .withoutPadding()
+    //             .encodeToString(bytes);
+
+    //     MessageDigest md = MessageDigest.getInstance("SHA-256");
+    //     byte[] digest = md.digest(verifier.getBytes());
+
+    //     String challenge = Base64.getUrlEncoder()
+    //             .withoutPadding()
+    //             .encodeToString(digest);
+
+    //     // store verifier in session
+    //     session.setAttribute("pkce_verifier", verifier);
+
+    //     String url = authUrl
+    //             + "?response_type=code"
+    //             + "&client_id=" + clientId
+    //             + "&redirect_uri=" + redirectUri
+    //             + "&code_challenge=" + challenge
+    //             + "&code_challenge_method=S256";
+
+    //     response.sendRedirect(url);
+    // }
+
     @GetMapping("/login")
-    public void login(HttpServletResponse response, HttpSession session) throws Exception {
+public void login(HttpServletResponse response, HttpSession session) throws Exception {
 
-        SecureRandom random = new SecureRandom();
-        byte[] bytes = new byte[32];
-        random.nextBytes(bytes);
+    SecureRandom random = new SecureRandom();
+    byte[] bytes = new byte[32];
+    random.nextBytes(bytes);
 
-        String verifier = Base64.getUrlEncoder()
-                .withoutPadding()
-                .encodeToString(bytes);
+    String verifier = Base64.getUrlEncoder()
+            .withoutPadding()
+            .encodeToString(bytes);
 
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        byte[] digest = md.digest(verifier.getBytes());
+    MessageDigest md = MessageDigest.getInstance("SHA-256");
+    byte[] digest = md.digest(verifier.getBytes());
 
-        String challenge = Base64.getUrlEncoder()
-                .withoutPadding()
-                .encodeToString(digest);
+    String challenge = Base64.getUrlEncoder()
+            .withoutPadding()
+            .encodeToString(digest);
 
-        // store verifier in session
-        session.setAttribute("pkce_verifier", verifier);
+    session.setAttribute("pkce_verifier", verifier);
 
-        String url = authUrl
-                + "?response_type=code"
-                + "&client_id=" + clientId
-                + "&redirect_uri=" + redirectUri
-                + "&code_challenge=" + challenge
-                + "&code_challenge_method=S256";
+    String state = Base64.getUrlEncoder()
+            .withoutPadding()
+            .encodeToString(("state-" + System.currentTimeMillis()).getBytes());
 
-        response.sendRedirect(url);
-    }
+    String url = authUrl
+            + "?response_type=code"
+            + "&client_id=" + clientId
+            + "&redirect_uri=" + redirectUri
+            + "&state=" + state
+            + "&code_challenge=" + challenge
+            + "&code_challenge_method=S256";
+
+    response.sendRedirect(url);
+}
 
     // ---------------- CALLBACK ----------------
     @GetMapping("/callback")
