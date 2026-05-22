@@ -49,38 +49,65 @@ public class AuthController {
     private String authUrl;
 
     // LOGIN → Salesforce OAuth page
-    @GetMapping("/login")
-    public void login(HttpServletResponse response) throws Exception {
+    // @GetMapping("/login")
+    // public void login(HttpServletResponse response) throws Exception {
 
-        SecureRandom random = new SecureRandom();
-        byte[] bytes = new byte[32];
-        random.nextBytes(bytes);
+    //     SecureRandom random = new SecureRandom();
+    //     byte[] bytes = new byte[32];
+    //     random.nextBytes(bytes);
 
-        String verifier = Base64.getUrlEncoder()
-                .withoutPadding()
-                .encodeToString(bytes);
+    //     String verifier = Base64.getUrlEncoder()
+    //             .withoutPadding()
+    //             .encodeToString(bytes);
 
-        // store per session (VERY IMPORTANT FIX)
+    //     // store per session (VERY IMPORTANT FIX)
         
 
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        byte[] digest = md.digest(verifier.getBytes());
+    //     MessageDigest md = MessageDigest.getInstance("SHA-256");
+    //     byte[] digest = md.digest(verifier.getBytes());
 
-        String challenge = Base64.getUrlEncoder()
-                .withoutPadding()
-                .encodeToString(digest);
+    //     String challenge = Base64.getUrlEncoder()
+    //             .withoutPadding()
+    //             .encodeToString(digest);
 
-        String url = authUrl
-                + "?response_type=code"
-                + "&client_id=" + clientId
-                + "&redirect_uri=" + redirectUri
-                + "&code_challenge=" + challenge
-                + "&code_challenge_method=S256";
-                + "&state=" + verifier;
+    //     String url = authUrl
+    //             + "?response_type=code"
+    //             + "&client_id=" + clientId
+    //             + "&redirect_uri=" + redirectUri
+    //             + "&code_challenge=" + challenge
+    //             + "&code_challenge_method=S256";
+    //             + "&state=" + verifier;
 
-        response.sendRedirect(url);
-    }
+    //     response.sendRedirect(url);
+    // }
+    @GetMapping("/login")
+public void login(HttpServletResponse response) throws Exception {
 
+    SecureRandom random = new SecureRandom();
+    byte[] bytes = new byte[32];
+    random.nextBytes(bytes);
+
+    String verifier = Base64.getUrlEncoder()
+            .withoutPadding()
+            .encodeToString(bytes);
+
+    MessageDigest md = MessageDigest.getInstance("SHA-256");
+    byte[] digest = md.digest(verifier.getBytes());
+
+    String challenge = Base64.getUrlEncoder()
+            .withoutPadding()
+            .encodeToString(digest);
+
+    String url = authUrl
+            + "?response_type=code"
+            + "&client_id=" + clientId
+            + "&redirect_uri=" + redirectUri
+            + "&code_challenge=" + challenge
+            + "&code_challenge_method=S256"
+            + "&state=" + verifier;
+
+    response.sendRedirect(url);
+}
     
     
     // CALLBACK → exchange token → return to React
