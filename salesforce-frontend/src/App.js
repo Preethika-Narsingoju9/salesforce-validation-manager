@@ -8,7 +8,7 @@ function App() {
 
   // LOGIN TO SALESFORCE
   const loginToSalesforce = () => {
-    window.location.href = "http://localhost:8080/login";
+    window.location.href = "https://salesforce-validation-manager-snah.onrender.com/login";
   };
 
   // GET VALIDATION RULES
@@ -17,7 +17,7 @@ function App() {
       setLoading(true);
 
       const response = await axios.get(
-        "http://localhost:8080/validation-rules"
+        "https://salesforce-validation-manager-snah.onrender.com/validation-rules"
       );
 
       setRules(response.data.records || []);
@@ -34,7 +34,7 @@ function App() {
   const toggleRule = async (id, currentStatus) => {
     try {
       await axios.get(
-        `http://localhost:8080/toggle-rule?id=${id}&active=${!currentStatus}`
+        `https://salesforce-validation-manager-snah.onrender.com/toggle-rule?id=${id}&active=${!currentStatus}`
       );
 
       alert("Validation Rule Updated");
