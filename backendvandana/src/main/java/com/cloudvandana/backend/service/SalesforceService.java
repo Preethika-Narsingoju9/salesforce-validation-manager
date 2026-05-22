@@ -74,7 +74,8 @@ public class SalesforceService {
     public ValidationRuleResponse getValidationRules() {
 
         if (instanceUrl == null || accessToken == null) {
-            throw new RuntimeException("Please login to Salesforce first.");
+        //     throw new RuntimeException("Please login to Salesforce first.");
+        return null;
         }
 
 

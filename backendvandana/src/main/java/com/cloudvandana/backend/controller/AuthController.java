@@ -146,10 +146,24 @@ public void callback(@RequestParam("code") String code,
     response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
 }
 
+    // @GetMapping("/validation-rules")
+    // public ValidationRuleResponse getRules() {
+    //     return salesforceService.getValidationRules();
+    // }
+
     @GetMapping("/validation-rules")
-    public ValidationRuleResponse getRules() {
-        return salesforceService.getValidationRules();
+public ResponseEntity<?> getRules() {
+
+    ValidationRuleResponse response = salesforceService.getValidationRules();
+
+    if (response == null) {
+        return ResponseEntity
+                .status(401)
+                .body("Please login to Salesforce first.");
     }
+
+    return ResponseEntity.ok(response);
+}
 
     @GetMapping("/toggle-rule")
     public String toggle(@RequestParam String id,
