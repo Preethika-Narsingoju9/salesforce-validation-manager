@@ -80,31 +80,42 @@ public class AuthController {
 
     //     response.sendRedirect(url);
     // }
-    @GetMapping("/login")
+//     @GetMapping("/login")
+// public void login(HttpServletResponse response) throws Exception {
+
+//     SecureRandom random = new SecureRandom();
+//     byte[] bytes = new byte[32];
+//     random.nextBytes(bytes);
+
+//     String verifier = Base64.getUrlEncoder()
+//             .withoutPadding()
+//             .encodeToString(bytes);
+
+//     MessageDigest md = MessageDigest.getInstance("SHA-256");
+//     byte[] digest = md.digest(verifier.getBytes());
+
+//     String challenge = Base64.getUrlEncoder()
+//             .withoutPadding()
+//             .encodeToString(digest);
+
+//     String url = authUrl
+//             + "?response_type=code"
+//             + "&client_id=" + clientId
+//             + "&redirect_uri=" + redirectUri
+//             + "&code_challenge=" + challenge
+//             + "&code_challenge_method=S256"
+//             + "&state=" + verifier;
+
+//     response.sendRedirect(url);
+// }
+@GetMapping("/login")
 public void login(HttpServletResponse response) throws Exception {
-
-    SecureRandom random = new SecureRandom();
-    byte[] bytes = new byte[32];
-    random.nextBytes(bytes);
-
-    String verifier = Base64.getUrlEncoder()
-            .withoutPadding()
-            .encodeToString(bytes);
-
-    MessageDigest md = MessageDigest.getInstance("SHA-256");
-    byte[] digest = md.digest(verifier.getBytes());
-
-    String challenge = Base64.getUrlEncoder()
-            .withoutPadding()
-            .encodeToString(digest);
 
     String url = authUrl
             + "?response_type=code"
             + "&client_id=" + clientId
             + "&redirect_uri=" + redirectUri
-            + "&code_challenge=" + challenge
-            + "&code_challenge_method=S256"
-            + "&state=" + verifier;
+            + "&state=test";
 
     response.sendRedirect(url);
 }
@@ -126,16 +137,24 @@ public void login(HttpServletResponse response) throws Exception {
 
     //     response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
     // }
-    @GetMapping("/callback")
+//     @GetMapping("/callback")
+// public void callback(@RequestParam("code") String code,
+//                      @RequestParam(value = "state", required = false) String verifier,
+//                      HttpServletResponse response) throws Exception {
+
+//     if (verifier == null) {
+//         throw new RuntimeException("Verifier missing");
+//     }
+
+//     salesforceService.getAccessToken(code, verifier);
+
+//     response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
+// }
+@GetMapping("/callback")
 public void callback(@RequestParam("code") String code,
-                     @RequestParam(value = "state", required = false) String verifier,
                      HttpServletResponse response) throws Exception {
 
-    if (verifier == null) {
-        throw new RuntimeException("Verifier missing");
-    }
-
-    salesforceService.getAccessToken(code, verifier);
+    salesforceService.getAccessToken(code, "test");
 
     response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
 }
