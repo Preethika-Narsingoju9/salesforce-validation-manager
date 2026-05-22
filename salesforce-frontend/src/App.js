@@ -96,7 +96,7 @@ function App() {
             {rules.map((rule) => (
               <tr key={rule.Id}>
 
-                <td>{rule.ValidationName}</td>
+                <td>{rule.FullName}</td>
 
                 <td>
                   {rule.Active ? "Active" : "Inactive"}
