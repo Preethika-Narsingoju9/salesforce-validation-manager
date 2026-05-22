@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "https://salesforce-frontend-41ny.onrender.com")
 public class AuthController {
 
     private final SalesforceService salesforceService;
@@ -97,7 +97,7 @@ public class AuthController {
 
         salesforceService.getAccessToken(code, verifier);
 
-        response.sendRedirect("http://localhost:3000");
+        response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
     }
     
     

@@ -58,22 +58,9 @@ function App() {
 
       <h1>Salesforce Validation Rule Manager</h1>
 
-      {/* BUTTONS */}
-      {/* <div className="button-container">
+      
 
-        <button onClick={loginToSalesforce}>
-          Login to Salesforce
-        </button>
-
-        <button onClick={getValidationRules}>
-          Get Validation Rules
-        </button>
-
-        <button onClick={deployChanges}>
-          Deploy Changes
-        </button>
-
-      </div> */}
+      
       <div className="button-container">
 
   <button onClick={loginToSalesforce}>
