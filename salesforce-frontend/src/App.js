@@ -19,7 +19,7 @@ function App() {
     try {
       setLoading(true);
 
-      const response = await axios.get(`${API_BASE}/validation-rules`);
+      const response = await axios.get(`${API_BASE}/api/validation-rules`);
 
       setRules(response.data?.records ?? []);
     } catch (error) {
