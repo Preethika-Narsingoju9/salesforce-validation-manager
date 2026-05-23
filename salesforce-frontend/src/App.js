@@ -147,7 +147,7 @@ function App() {
   const API_BASE =
     "https://salesforce-validation-manager-snah.onrender.com";
 
-  // ---------------- LOGIN ----------------
+  // LOGIN
 
   const loginToSalesforce = () => {
 
@@ -155,7 +155,7 @@ function App() {
       `${API_BASE}/api/login`;
   };
 
-  // ---------------- GET RULES ----------------
+  // GET RULES
 
   const getValidationRules = async () => {
 
@@ -170,13 +170,13 @@ function App() {
         }
       );
 
-      setRules(response.data?.records ?? []);
+      setRules(response.data.records || []);
 
     } catch (error) {
 
       console.error(error);
 
-      alert("Error fetching validation rules");
+      alert("Failed fetching validation rules");
 
     } finally {
 
@@ -184,7 +184,7 @@ function App() {
     }
   };
 
-  // ---------------- TOGGLE ----------------
+  // TOGGLE
 
   const toggleRule = async (
     id,
@@ -212,7 +212,17 @@ function App() {
     }
   };
 
+  // DEPLOY BUTTON
+
+  const deployChanges = () => {
+
+    alert(
+      "Changes are deployed directly to Salesforce using Tooling API."
+    );
+  };
+
   return (
+
     <div className="container">
 
       <h1>
@@ -226,7 +236,14 @@ function App() {
         </button>
 
         <button onClick={getValidationRules}>
-          Get Validation Rules
+          Validation Rules
+        </button>
+
+        <button
+          className="deploy-btn"
+          onClick={deployChanges}
+        >
+          Deploy Changes
         </button>
 
       </div>
@@ -240,11 +257,13 @@ function App() {
         <table>
 
           <thead>
+
             <tr>
               <th>Rule Name</th>
               <th>Status</th>
               <th>Action</th>
             </tr>
+
           </thead>
 
           <tbody>
