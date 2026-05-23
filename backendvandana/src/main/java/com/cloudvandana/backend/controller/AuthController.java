@@ -493,49 +493,74 @@ public class AuthController {
 
     // ---------------- LOGIN ----------------
 
+    // @GetMapping("/api/login")
+    // public void login(
+    //         HttpServletResponse response)
+    //         throws Exception {
+
+    //     String codeVerifier =
+    //             generateCodeVerifier();
+
+    //     String codeChallenge =
+    //             generateCodeChallenge(
+    //                     codeVerifier);
+
+    //     // SAVE IN COOKIE INSTEAD OF SESSION
+
+    //     Cookie cookie =
+    //             new Cookie(
+    //                     "code_verifier",
+    //                     codeVerifier);
+
+    //     cookie.setHttpOnly(true);
+
+    //     cookie.setSecure(true);
+
+    //     cookie.setPath("/");
+
+    //     cookie.setMaxAge(300);
+
+    //     response.addCookie(cookie);
+
+    //     String loginUrl =
+    //             authUrl +
+    //             "?response_type=code" +
+    //             "&client_id=" + clientId +
+    //             "&redirect_uri=" +
+    //             URLEncoder.encode(
+    //                     redirectUri,
+    //                     StandardCharsets.UTF_8) +
+    //             "&code_challenge=" +
+    //             codeChallenge +
+    //             "&code_challenge_method=S256";
+
+    //     response.sendRedirect(loginUrl);
+    // }
     @GetMapping("/api/login")
-    public void login(
-            HttpServletResponse response)
-            throws Exception {
+public void login(HttpServletResponse response) throws Exception {
 
-        String codeVerifier =
-                generateCodeVerifier();
+    String codeVerifier = generateCodeVerifier();
+    String codeChallenge = generateCodeChallenge(codeVerifier);
 
-        String codeChallenge =
-                generateCodeChallenge(
-                        codeVerifier);
+    Cookie cookie = new Cookie("code_verifier", codeVerifier);
+    cookie.setHttpOnly(true);
+    cookie.setSecure(true);
+    cookie.setPath("/");
+    cookie.setMaxAge(300);
+    response.addCookie(cookie);
 
-        // SAVE IN COOKIE INSTEAD OF SESSION
+    String loginUrl =
+            "https://login.salesforce.com/services/oauth2/authorize"
+            + "?response_type=code"
+            + "&client_id=" + clientId
+            + "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8)
+            + "&code_challenge=" + codeChallenge
+            + "&code_challenge_method=S256";
 
-        Cookie cookie =
-                new Cookie(
-                        "code_verifier",
-                        codeVerifier);
+    System.out.println("REDIRECTING TO: " + loginUrl);
 
-        cookie.setHttpOnly(true);
-
-        cookie.setSecure(true);
-
-        cookie.setPath("/");
-
-        cookie.setMaxAge(300);
-
-        response.addCookie(cookie);
-
-        String loginUrl =
-                authUrl +
-                "?response_type=code" +
-                "&client_id=" + clientId +
-                "&redirect_uri=" +
-                URLEncoder.encode(
-                        redirectUri,
-                        StandardCharsets.UTF_8) +
-                "&code_challenge=" +
-                codeChallenge +
-                "&code_challenge_method=S256";
-
-        response.sendRedirect(loginUrl);
-    }
+    response.sendRedirect(loginUrl);
+}
 
     // ---------------- CALLBACK ----------------
 

@@ -155,7 +155,225 @@
 // }
 
 
+// package com.cloudvandana.backend.service;
+
+// import java.util.Map;
+
+// import org.springframework.beans.factory.annotation.Value;
+// import org.springframework.http.*;
+// import org.springframework.stereotype.Service;
+// import org.springframework.util.LinkedMultiValueMap;
+// import org.springframework.util.MultiValueMap;
+// import org.springframework.web.client.RestTemplate;
+
+// import com.cloudvandana.backend.dto.TokenResponse;
+// import com.cloudvandana.backend.dto.ValidationRuleResponse;
+
+// @Service
+// public class SalesforceService {
+
+// //     private String accessToken;
+// //     private String instanceUrl;
+// private final Map<String, String> cache = new java.util.concurrent.ConcurrentHashMap<>();
+
+//     @Value("${salesforce.client.id}")
+//     private String clientId;
+
+//     @Value("${salesforce.client.secret}")
+//     private String clientSecret;
+
+//     @Value("${salesforce.redirect.uri}")
+//     private String redirectUri;
+
+//     @Value("${salesforce.token.url}")
+//     private String tokenUrl;
+
+//     private final RestTemplate restTemplate;
+
+//     public SalesforceService(
+//             RestTemplate restTemplate) {
+
+//         this.restTemplate = restTemplate;
+//     }
+
+//     // ---------------- LOGIN ----------------
+
+//     public TokenResponse getAccessToken(
+//             String code,
+//             String codeVerifier) {
+
+//         HttpHeaders headers =
+//                 new HttpHeaders();
+
+//         headers.setContentType(
+//                 MediaType.APPLICATION_FORM_URLENCODED);
+
+//         MultiValueMap<String, String> body =
+//                 new LinkedMultiValueMap<>();
+
+//         body.add(
+//                 "grant_type",
+//                 "authorization_code");
+
+//         body.add(
+//                 "client_id",
+//                 clientId);
+
+//         body.add(
+//                 "client_secret",
+//                 clientSecret);
+
+//         body.add(
+//                 "redirect_uri",
+//                 redirectUri);
+
+//         body.add(
+//                 "code",
+//                 code);
+
+//         body.add(
+//                 "code_verifier",
+//                 codeVerifier);
+
+//         HttpEntity<MultiValueMap<String, String>>
+//                 request =
+//                 new HttpEntity<>(body, headers);
+
+//         ResponseEntity<TokenResponse> response =
+//                 restTemplate.postForEntity(
+//                         tokenUrl,
+//                         request,
+//                         TokenResponse.class);
+
+//         // this.accessToken =
+//         //         response.getBody()
+//         //                 .getAccess_token();
+
+//         // this.instanceUrl =
+//         //         response.getBody()
+//         //                 .getInstance_url();
+//         this.cache.put("access_token", response.getBody().getAccess_token());
+// this.cache.put("instance_url", response.getBody().getInstance_url());
+
+//         return response.getBody();
+//     }
+
+//     // ---------------- GET RULES ----------------
+
+//     public ValidationRuleResponse
+//     getValidationRules() {
+
+//         String url =
+//                 instanceUrl +
+//                 "/services/data/v62.0/tooling/query/?q=" +
+//                 "SELECT+Id,Name,Active+" +
+//                 "FROM+ValidationRule+LIMIT+50";
+
+//         HttpHeaders headers =
+//                 new HttpHeaders();
+
+//         headers.setBearerAuth(accessToken);
+
+//         HttpEntity<String> entity =
+//                 new HttpEntity<>(headers);
+
+//         ResponseEntity<ValidationRuleResponse>
+//                 response =
+//                 restTemplate.exchange(
+//                         url,
+//                         HttpMethod.GET,
+//                         entity,
+//                         ValidationRuleResponse.class
+//                 );
+//                 String accessToken = cache.get("access_token");
+// String instanceUrl = cache.get("instance_url");
+
+// if (accessToken == null || instanceUrl == null) {
+//     throw new RuntimeException("User not logged in");
+// }
+
+//         return response.getBody();
+//     }
+
+//     // ---------------- TOGGLE ----------------
+
+//     public String toggleValidationRule(
+//             String id,
+//             Boolean active) {
+
+//         String getUrl =
+//                 instanceUrl +
+//                 "/services/data/v62.0/tooling/" +
+//                 "sobjects/ValidationRule/" +
+//                 id;
+
+//         HttpHeaders headers =
+//                 new HttpHeaders();
+
+//         headers.setBearerAuth(accessToken);
+
+//         HttpEntity<String> getEntity =
+//                 new HttpEntity<>(headers);
+
+//         ResponseEntity<String> getResponse =
+//                 restTemplate.exchange(
+//                         getUrl,
+//                         HttpMethod.GET,
+//                         getEntity,
+//                         String.class
+//                 );
+
+//         String responseBody =
+//                 getResponse.getBody();
+
+//         String errorConditionFormula =
+//                 responseBody
+//                         .split("\"errorConditionFormula\":\"")[1]
+//                         .split("\"")[0];
+
+//         String errorMessage =
+//                 responseBody
+//                         .split("\"errorMessage\":\"")[1]
+//                         .split("\"")[0];
+
+//         String patchUrl =
+//                 instanceUrl +
+//                 "/services/data/v62.0/tooling/" +
+//                 "sobjects/ValidationRule/" +
+//                 id;
+
+//         headers.setContentType(
+//                 MediaType.APPLICATION_JSON);
+
+//         String body =
+//                 "{"
+//                         + "\"Metadata\":{"
+//                         + "\"active\":" + active + ","
+//                         + "\"errorConditionFormula\":\""
+//                         + errorConditionFormula + "\","
+//                         + "\"errorMessage\":\""
+//                         + errorMessage + "\""
+//                         + "}"
+//                         + "}";
+
+//         HttpEntity<String> patchEntity =
+//                 new HttpEntity<>(body, headers);
+
+//         restTemplate.exchange(
+//                 patchUrl,
+//                 HttpMethod.PATCH,
+//                 patchEntity,
+//                 String.class
+//         );
+
+//         return "Validation Rule Updated Successfully";
+//     }
+// }
+
 package com.cloudvandana.backend.service;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -170,8 +388,8 @@ import com.cloudvandana.backend.dto.ValidationRuleResponse;
 @Service
 public class SalesforceService {
 
-    private String accessToken;
-    private String instanceUrl;
+    private final Map<String, String> cache =
+            new ConcurrentHashMap<>();
 
     @Value("${salesforce.client.id}")
     private String clientId;
@@ -187,9 +405,7 @@ public class SalesforceService {
 
     private final RestTemplate restTemplate;
 
-    public SalesforceService(
-            RestTemplate restTemplate) {
-
+    public SalesforceService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
@@ -199,41 +415,21 @@ public class SalesforceService {
             String code,
             String codeVerifier) {
 
-        HttpHeaders headers =
-                new HttpHeaders();
-
+        HttpHeaders headers = new HttpHeaders();
         headers.setContentType(
                 MediaType.APPLICATION_FORM_URLENCODED);
 
         MultiValueMap<String, String> body =
                 new LinkedMultiValueMap<>();
 
-        body.add(
-                "grant_type",
-                "authorization_code");
+        body.add("grant_type", "authorization_code");
+        body.add("client_id", clientId);
+        body.add("client_secret", clientSecret);
+        body.add("redirect_uri", redirectUri);
+        body.add("code", code);
+        body.add("code_verifier", codeVerifier);
 
-        body.add(
-                "client_id",
-                clientId);
-
-        body.add(
-                "client_secret",
-                clientSecret);
-
-        body.add(
-                "redirect_uri",
-                redirectUri);
-
-        body.add(
-                "code",
-                code);
-
-        body.add(
-                "code_verifier",
-                codeVerifier);
-
-        HttpEntity<MultiValueMap<String, String>>
-                request =
+        HttpEntity<MultiValueMap<String, String>> request =
                 new HttpEntity<>(body, headers);
 
         ResponseEntity<TokenResponse> response =
@@ -242,21 +438,29 @@ public class SalesforceService {
                         request,
                         TokenResponse.class);
 
-        this.accessToken =
-                response.getBody()
-                        .getAccess_token();
+        cache.put(
+                "access_token",
+                response.getBody().getAccess_token()
+        );
 
-        this.instanceUrl =
-                response.getBody()
-                        .getInstance_url();
+        cache.put(
+                "instance_url",
+                response.getBody().getInstance_url()
+        );
 
         return response.getBody();
     }
 
     // ---------------- GET RULES ----------------
 
-    public ValidationRuleResponse
-    getValidationRules() {
+    public ValidationRuleResponse getValidationRules() {
+
+        String accessToken = cache.get("access_token");
+        String instanceUrl = cache.get("instance_url");
+
+        if (accessToken == null || instanceUrl == null) {
+            throw new RuntimeException("User not logged in");
+        }
 
         String url =
                 instanceUrl +
@@ -264,16 +468,13 @@ public class SalesforceService {
                 "SELECT+Id,Name,Active+" +
                 "FROM+ValidationRule+LIMIT+50";
 
-        HttpHeaders headers =
-                new HttpHeaders();
-
+        HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
 
         HttpEntity<String> entity =
                 new HttpEntity<>(headers);
 
-        ResponseEntity<ValidationRuleResponse>
-                response =
+        ResponseEntity<ValidationRuleResponse> response =
                 restTemplate.exchange(
                         url,
                         HttpMethod.GET,
@@ -290,15 +491,19 @@ public class SalesforceService {
             String id,
             Boolean active) {
 
+        String accessToken = cache.get("access_token");
+        String instanceUrl = cache.get("instance_url");
+
+        if (accessToken == null || instanceUrl == null) {
+            throw new RuntimeException("User not logged in");
+        }
+
         String getUrl =
                 instanceUrl +
-                "/services/data/v62.0/tooling/" +
-                "sobjects/ValidationRule/" +
+                "/services/data/v62.0/tooling/sobjects/ValidationRule/" +
                 id;
 
-        HttpHeaders headers =
-                new HttpHeaders();
-
+        HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
 
         HttpEntity<String> getEntity =
@@ -312,8 +517,7 @@ public class SalesforceService {
                         String.class
                 );
 
-        String responseBody =
-                getResponse.getBody();
+        String responseBody = getResponse.getBody();
 
         String errorConditionFormula =
                 responseBody
@@ -327,8 +531,7 @@ public class SalesforceService {
 
         String patchUrl =
                 instanceUrl +
-                "/services/data/v62.0/tooling/" +
-                "sobjects/ValidationRule/" +
+                "/services/data/v62.0/tooling/sobjects/ValidationRule/" +
                 id;
 
         headers.setContentType(
