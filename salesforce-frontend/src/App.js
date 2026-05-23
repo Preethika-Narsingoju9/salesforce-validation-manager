@@ -10,24 +10,30 @@ function App() {
     "https://salesforce-validation-manager-snah.onrender.com";
 
   // LOGIN TO SALESFORCE
+
+  const loginToSalesforce = () => {
+  window.location.href = `${API_BASE}/api/login`;
+};
+
+
   // const loginToSalesforce = () => {
   //   window.location.href = `${API_BASE}/api/login`;
   // };
 
-  const loginToSalesforce = () => {
-  const clientId = "3MVG97L7PWbPq6UwCL.6YvIjV90HG23keKInIpqpKBwC0bwHPdUdg8OJmqYkTHDhnnS4OUmE5QdfydRcRoTaQ";
+//   const loginToSalesforce = () => {
+//   const clientId = "3MVG97L7PWbPq6UwCL.6YvIjV90HG23keKInIpqpKBwC0bwHPdUdg8OJmqYkTHDhnnS4OUmE5QdfydRcRoTaQ";
 
-  const redirectUri =
-    "https://salesforce-validation-manager-snah.onrender.com/api/callback";
+//   const redirectUri =
+//     "https://salesforce-validation-manager-snah.onrender.com/api/callback";
 
-  const loginUrl =
-    `https://login.salesforce.com/services/oauth2/authorize` +
-    `?response_type=code` +
-    `&client_id=${clientId}` +
-    `&redirect_uri=${encodeURIComponent(redirectUri)}`;
+//   const loginUrl =
+//     `https://login.salesforce.com/services/oauth2/authorize` +
+//     `?response_type=code` +
+//     `&client_id=${clientId}` +
+//     `&redirect_uri=${encodeURIComponent(redirectUri)}`;
 
-  window.location.href = loginUrl;
-};
+//   window.location.href = loginUrl;
+// };
 
   // GET VALIDATION RULES
   const getValidationRules = async () => {
