@@ -4,6 +4,8 @@ import java.io.IOException;
 import com.cloudvandana.backend.dto.ValidationRuleResponse;
 import com.cloudvandana.backend.service.SalesforceService;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 

@@ -12,9 +12,6 @@ import org.springframework.web.client.RestTemplate;
 
 import com.cloudvandana.backend.dto.TokenResponse;
 import com.cloudvandana.backend.dto.ValidationRuleResponse;
-import com.cloudvandana.backend.dto.ValidationRule;
-
-import java.util.Arrays;
 
 @Service
 public class SalesforceService {
