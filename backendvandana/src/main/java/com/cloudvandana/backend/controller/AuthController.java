@@ -439,6 +439,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @CrossOrigin(
@@ -493,7 +495,29 @@ public class AuthController {
     }
 
     // ---------------- LOGIN ----------------
+    private final Map<String, String> pkceStore = new ConcurrentHashMap<>();
 
+@GetMapping("/api/login")
+public void login(HttpServletResponse response) throws Exception {
+
+    String state = java.util.UUID.randomUUID().toString();
+
+    String codeVerifier = generateCodeVerifier();
+    String codeChallenge = generateCodeChallenge(codeVerifier);
+
+    pkceStore.put(state, codeVerifier);
+
+    String loginUrl =
+            authUrl
+            + "?response_type=code"
+            + "&client_id=" + clientId
+            + "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8)
+            + "&code_challenge=" + codeChallenge
+            + "&code_challenge_method=S256"
+            + "&state=" + state;
+
+    response.sendRedirect(loginUrl);
+}
     // @GetMapping("/api/login")
     // public void login(
     //         HttpServletResponse response)
@@ -562,44 +586,42 @@ public class AuthController {
 
 //     response.sendRedirect(loginUrl);
 // }
-@GetMapping("/api/login")
-public void login(HttpServletResponse response, HttpSession session)
-        throws Exception {
+// @GetMapping("/api/login")
+// public void login(HttpServletResponse response, HttpSession session)
+//         throws Exception {
 
-    String codeVerifier = generateCodeVerifier();
-    String codeChallenge = generateCodeChallenge(codeVerifier);
+//     String codeVerifier = generateCodeVerifier();
+//     String codeChallenge = generateCodeChallenge(codeVerifier);
 
-    session.setAttribute("code_verifier", codeVerifier);
+//     session.setAttribute("code_verifier", codeVerifier);
 
-    String loginUrl =
-            authUrl
-            + "?response_type=code"
-            + "&client_id=" + clientId
-            + "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8)
-            + "&code_challenge=" + codeChallenge
-            + "&code_challenge_method=S256";
+//     String loginUrl =
+//             authUrl
+//             + "?response_type=code"
+//             + "&client_id=" + clientId
+//             + "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8)
+//             + "&code_challenge=" + codeChallenge
+//             + "&code_challenge_method=S256";
 
-    System.out.println("LOGIN URL => " + loginUrl);
+//     System.out.println("LOGIN URL => " + loginUrl);
 
-    response.sendRedirect(loginUrl);
-}
+//     response.sendRedirect(loginUrl);
+// }
 
     // ---------------- CALLBACK ----------------
-
-    @GetMapping("/api/callback")
+@GetMapping("/api/callback")
 public void callback(
         @RequestParam("code") String code,
-        HttpSession session,
-        HttpServletResponse response)
-        throws IOException {
+        @RequestParam("state") String state,
+        HttpServletResponse response) throws IOException {
 
     try {
 
-        String codeVerifier =
-                (String) session.getAttribute("code_verifier");
+        String codeVerifier = pkceStore.get(state);
 
         if (codeVerifier == null) {
-            throw new RuntimeException("Missing code_verifier in session");
+            response.getWriter().write("ERROR: Invalid or expired state");
+            return;
         }
 
         salesforceService.getAccessToken(code, codeVerifier);
@@ -611,10 +633,38 @@ public void callback(
 
         e.printStackTrace();
 
-        response.getWriter()
-                .write("LOGIN FAILED: " + e.getMessage());
+        response.getWriter().write("LOGIN FAILED: " + e.getMessage());
     }
 }
+//     @GetMapping("/api/callback")
+// public void callback(
+//         @RequestParam("code") String code,
+//         HttpSession session,
+//         HttpServletResponse response)
+//         throws IOException {
+
+//     try {
+
+//         String codeVerifier =
+//                 (String) session.getAttribute("code_verifier");
+
+//         if (codeVerifier == null) {
+//             throw new RuntimeException("Missing code_verifier in session");
+//         }
+
+//         salesforceService.getAccessToken(code, codeVerifier);
+
+//         response.sendRedirect(
+//                 "https://salesforce-frontend-41ny.onrender.com");
+
+//     } catch (Exception e) {
+
+//         e.printStackTrace();
+
+//         response.getWriter()
+//                 .write("LOGIN FAILED: " + e.getMessage());
+//     }
+// }
     // @GetMapping("/api/callback")
     // public void callback(
     //         @RequestParam("code") String code,
