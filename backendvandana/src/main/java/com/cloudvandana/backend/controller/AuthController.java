@@ -77,27 +77,51 @@ System.out.println("REDIRECT URI RAW = [" + redirectUri + "]");
 }
 
     // ---------------- CALLBACK ----------------
+    // @GetMapping("/api/callback")
+    // public void callback(@RequestParam("code") String code,
+    //                      HttpServletResponse response,
+    //                      HttpSession session) throws Exception {
+
+    //     String verifier = (String) session.getAttribute("pkce_verifier");
+
+    //     if (verifier == null) {
+    //         throw new RuntimeException("Missing PKCE verifier in session");
+    //     }
+
+    //     salesforceService.getAccessToken(code, verifier);
+
+    //     response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
+    // }
     @GetMapping("/api/callback")
-    public void callback(@RequestParam("code") String code,
-                         HttpServletResponse response,
-                         HttpSession session) throws Exception {
+public void callback(@RequestParam(value = "code", required = false) String code,
+                     HttpServletResponse response,
+                     HttpSession session) throws Exception {
 
-        String verifier = (String) session.getAttribute("pkce_verifier");
-
-        if (verifier == null) {
-            throw new RuntimeException("Missing PKCE verifier in session");
-        }
-
-        salesforceService.getAccessToken(code, verifier);
-
-        response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
+    if (code == null) {
+        throw new RuntimeException("OAuth failed: code is missing");
     }
+
+    String verifier = (String) session.getAttribute("pkce_verifier");
+
+    if (verifier == null) {
+        throw new RuntimeException("Missing PKCE verifier");
+    }
+
+    salesforceService.getAccessToken(code, verifier);
+
+    response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
+}
 
     // ---------------- VALIDATION RULES ----------------
     
+// @GetMapping("/api/validation-rules")
+// public ValidationRuleResponse getValidationRules() {
+//     return salesforceService.getValidationRules();
+// }
+
 @GetMapping("/api/validation-rules")
-public ValidationRuleResponse getValidationRules() {
-    return salesforceService.getValidationRules();
+public ResponseEntity<?> getRules() {
+    return ResponseEntity.ok("working");
 }
 
 //     public ValidationRuleResponse getValidationRules() {
