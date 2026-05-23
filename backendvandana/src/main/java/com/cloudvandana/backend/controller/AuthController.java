@@ -507,7 +507,7 @@ public void login(HttpServletResponse response) throws Exception {
 
     pkceStore.put(state, codeVerifier);
 
-    String loginUrl =
+    String Url =
             authUrl
             + "?response_type=code"
             + "&client_id=" + clientId
@@ -515,9 +515,18 @@ public void login(HttpServletResponse response) throws Exception {
             + "&code_challenge=" + codeChallenge
             + "&code_challenge_method=S256"
             + "&state=" + state;
+            System.out.println("FORCED REDIRECT TO:");
+    System.out.println(Url);
 
-    response.sendRedirect(loginUrl);
+    // 🔥 HARD BROWSER REDIRECT (NO SPRING INTERFERENCE)
+    response.reset();
+    response.setStatus(HttpServletResponse.SC_FOUND);
+    response.setHeader("Location", Url);
+    response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
 }
+
+//     response.sendRedirect(loginUrl);
+// }
     // @GetMapping("/api/login")
     // public void login(
     //         HttpServletResponse response)
