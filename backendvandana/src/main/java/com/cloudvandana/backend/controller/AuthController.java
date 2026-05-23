@@ -495,7 +495,7 @@ public class AuthController {
     }
 
     // ---------------- LOGIN ----------------
-    private final Map<String, String> pkceStore = new ConcurrentHashMap<>();
+    private final Map<String, String> pkceStore = new java.util.concurrent.ConcurrentHashMap<>();
 
 @GetMapping("/api/login")
 public void login(HttpServletResponse response) throws Exception {
@@ -515,14 +515,14 @@ public void login(HttpServletResponse response) throws Exception {
             + "&code_challenge=" + codeChallenge
             + "&code_challenge_method=S256"
             + "&state=" + state;
-            System.out.println("FORCED REDIRECT TO:");
-    System.out.println(Url);
+    //         System.out.println("FORCED REDIRECT TO:");
+    // System.out.println(Url);
 
     // 🔥 HARD BROWSER REDIRECT (NO SPRING INTERFERENCE)
     response.reset();
-    response.setStatus(HttpServletResponse.SC_FOUND);
+    response.setStatus(302);
     response.setHeader("Location", Url);
-    response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    // response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
 }
 
 //     response.sendRedirect(loginUrl);
@@ -624,27 +624,21 @@ public void callback(
         @RequestParam("state") String state,
         HttpServletResponse response) throws IOException {
 
-    try {
+    
 
         String codeVerifier = pkceStore.get(state);
 
         if (codeVerifier == null) {
-            response.getWriter().write("ERROR: Invalid or expired state");
-            return;
+            throw new RuntimeException("PKCE verifier missing (Render stateless issue)");
         }
 
-        salesforceService.getAccessToken(code, codeVerifier);
+        
 
         response.sendRedirect(
                 "https://salesforce-frontend-41ny.onrender.com");
 
-    } catch (Exception e) {
+    } 
 
-        e.printStackTrace();
-
-        response.getWriter().write("LOGIN FAILED: " + e.getMessage());
-    }
-}
 //     @GetMapping("/api/callback")
 // public void callback(
 //         @RequestParam("code") String code,
