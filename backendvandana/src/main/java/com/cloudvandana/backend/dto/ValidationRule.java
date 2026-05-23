@@ -14,6 +14,6 @@ import lombok.Data;
 public class ValidationRule {
 
     private String Id;
-    private String FullName;
+    private String Name;
     private Boolean Active;
 }
