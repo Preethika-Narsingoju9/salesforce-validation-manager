@@ -495,33 +495,47 @@ public class AuthController {
     }
 
     // ---------------- LOGIN ----------------
-    private final Map<String, String> pkceStore = new java.util.concurrent.ConcurrentHashMap<>();
 
-@GetMapping("/api/login")
+    @GetMapping("/api/login")
 public void login(HttpServletResponse response) throws Exception {
 
-    String state = java.util.UUID.randomUUID().toString();
-
-    String codeVerifier = generateCodeVerifier();
-    String codeChallenge = generateCodeChallenge(codeVerifier);
-
-    pkceStore.put(state, codeVerifier);
-
-    String Url =
+    String url =
             authUrl
             + "?response_type=code"
             + "&client_id=" + clientId
-            + "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8)
-            + "&code_challenge=" + codeChallenge
-            + "&code_challenge_method=S256"
-            + "&state=" + state;
-    //         System.out.println("FORCED REDIRECT TO:");
-    // System.out.println(Url);
+            + "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8);
 
-    // 🔥 HARD BROWSER REDIRECT (NO SPRING INTERFERENCE)
-    response.reset();
     response.setStatus(302);
-    response.setHeader("Location", Url);
+    response.setHeader("Location", url);
+}
+
+//     private final Map<String, String> pkceStore = new java.util.concurrent.ConcurrentHashMap<>();
+
+// @GetMapping("/api/login")
+// public void login(HttpServletResponse response) throws Exception {
+
+//     String state = java.util.UUID.randomUUID().toString();
+
+//     String codeVerifier = generateCodeVerifier();
+//     String codeChallenge = generateCodeChallenge(codeVerifier);
+
+//     pkceStore.put(state, codeVerifier);
+
+//     String Url =
+//             authUrl
+//             + "?response_type=code"
+//             + "&client_id=" + clientId
+//             + "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8)
+//             + "&code_challenge=" + codeChallenge
+//             + "&code_challenge_method=S256"
+//             + "&state=" + state;
+//     //         System.out.println("FORCED REDIRECT TO:");
+//     // System.out.println(Url);
+
+//     // 🔥 HARD BROWSER REDIRECT (NO SPRING INTERFERENCE)
+//     response.reset();
+//     response.setStatus(302);
+//     response.setHeader("Location", Url);
     // response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
 }
 
@@ -618,26 +632,36 @@ public void login(HttpServletResponse response) throws Exception {
 // }
 
     // ---------------- CALLBACK ----------------
-@GetMapping("/api/callback")
-public void callback(
-        @RequestParam("code") String code,
-        @RequestParam("state") String state,
-        HttpServletResponse response) throws IOException {
+
+    @GetMapping("/api/callback")
+public void callback(@RequestParam("code") String code,
+                     HttpServletResponse response) throws Exception {
+
+    salesforceService.getAccessTokenSimple(code);
+
+    response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
+}
+
+// @GetMapping("/api/callback")
+// public void callback(
+//         @RequestParam("code") String code,
+//         @RequestParam("state") String state,
+//         HttpServletResponse response) throws IOException {
 
     
 
-        String codeVerifier = pkceStore.get(state);
+//         String codeVerifier = pkceStore.get(state);
 
-        if (codeVerifier == null) {
-            throw new RuntimeException("PKCE verifier missing (Render stateless issue)");
-        }
+//         if (codeVerifier == null) {
+//             throw new RuntimeException("PKCE verifier missing (Render stateless issue)");
+//         }
 
         
 
-        response.sendRedirect(
-                "https://salesforce-frontend-41ny.onrender.com");
+//         response.sendRedirect(
+//                 "https://salesforce-frontend-41ny.onrender.com");
 
-    } 
+//     } 
 
 //     @GetMapping("/api/callback")
 // public void callback(

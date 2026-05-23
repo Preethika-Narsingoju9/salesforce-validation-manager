@@ -380,10 +380,14 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
 import com.cloudvandana.backend.dto.TokenResponse;
 import com.cloudvandana.backend.dto.ValidationRuleResponse;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @Service
 public class SalesforceService {
@@ -411,45 +415,69 @@ public class SalesforceService {
 
     // ---------------- LOGIN ----------------
 
-    public TokenResponse getAccessToken(
-            String code,
-            String codeVerifier) {
+    public TokenResponse getAccessTokenSimple(String code) {
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(
-                MediaType.APPLICATION_FORM_URLENCODED);
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        MultiValueMap<String, String> body =
-                new LinkedMultiValueMap<>();
+    MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
 
-        body.add("grant_type", "authorization_code");
-        body.add("client_id", clientId);
-        body.add("client_secret", clientSecret);
-        body.add("redirect_uri", redirectUri);
-        body.add("code", code);
-        body.add("code_verifier", codeVerifier);
+    body.add("grant_type", "authorization_code");
+    body.add("client_id", clientId);
+    body.add("client_secret", clientSecret);
+    body.add("redirect_uri", redirectUri);
+    body.add("code", code);
 
-        HttpEntity<MultiValueMap<String, String>> request =
-                new HttpEntity<>(body, headers);
+    HttpEntity<?> request = new HttpEntity<>(body, headers);
 
-        ResponseEntity<TokenResponse> response =
-                restTemplate.postForEntity(
-                        tokenUrl,
-                        request,
-                        TokenResponse.class);
+    ResponseEntity<TokenResponse> response =
+            restTemplate.postForEntity(tokenUrl, request, TokenResponse.class);
 
-        cache.put(
-                "access_token",
-                response.getBody().getAccess_token()
-        );
+    this.accessToken = response.getBody().getAccess_token();
+    this.instanceUrl = response.getBody().getInstance_url();
 
-        cache.put(
-                "instance_url",
-                response.getBody().getInstance_url()
-        );
+    return response.getBody();
+}
 
-        return response.getBody();
-    }
+//     public TokenResponse getAccessToken(
+//             String code,
+//             String codeVerifier) {
+
+//         HttpHeaders headers = new HttpHeaders();
+//         headers.setContentType(
+//                 MediaType.APPLICATION_FORM_URLENCODED);
+
+//         MultiValueMap<String, String> body =
+//                 new LinkedMultiValueMap<>();
+
+//         body.add("grant_type", "authorization_code");
+//         body.add("client_id", clientId);
+//         body.add("client_secret", clientSecret);
+//         body.add("redirect_uri", redirectUri);
+//         body.add("code", code);
+//         body.add("code_verifier", codeVerifier);
+
+//         HttpEntity<MultiValueMap<String, String>> request =
+//                 new HttpEntity<>(body, headers);
+
+//         ResponseEntity<TokenResponse> response =
+//                 restTemplate.postForEntity(
+//                         tokenUrl,
+//                         request,
+//                         TokenResponse.class);
+
+//         cache.put(
+//                 "access_token",
+//                 response.getBody().getAccess_token()
+//         );
+
+//         cache.put(
+//                 "instance_url",
+//                 response.getBody().getInstance_url()
+//         );
+
+//         return response.getBody();
+//     }
 
     // ---------------- GET RULES ----------------
 
