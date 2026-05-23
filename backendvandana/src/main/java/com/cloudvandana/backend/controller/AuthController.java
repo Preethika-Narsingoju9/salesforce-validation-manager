@@ -77,7 +77,7 @@ public class AuthController {
 
     // ---------------- LOGIN ----------------
 
-    @GetMapping("/login")
+    @GetMapping("/api/login")
     public void login(HttpServletResponse response,
                       HttpSession session) throws Exception {
 
@@ -105,7 +105,7 @@ public class AuthController {
 
     // ---------------- CALLBACK ----------------
 
-    @GetMapping("/callback")
+    @GetMapping("/api/callback")
     public String callback(@RequestParam("code") String code,
                            HttpSession session) {
 
