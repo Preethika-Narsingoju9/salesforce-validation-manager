@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
@@ -20,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "https://salesforce-frontend-41ny.onrender.com")
@@ -86,7 +88,6 @@ public class AuthController {
         String codeChallenge =
                 generateCodeChallenge(codeVerifier);
 
-        // Store verifier in session
         session.setAttribute("code_verifier", codeVerifier);
 
         String loginUrl =
@@ -106,8 +107,9 @@ public class AuthController {
     // ---------------- CALLBACK ----------------
 
     @GetMapping("/api/callback")
-    public String callback(@RequestParam("code") String code,
-                           HttpSession session) {
+    public ResponseEntity<?> callback(
+            @RequestParam("code") String code,
+            HttpSession session) {
 
         try {
 
@@ -123,8 +125,6 @@ public class AuthController {
             params.add("client_secret", clientSecret);
             params.add("redirect_uri", redirectUri);
             params.add("code", code);
-
-            // PKCE verifier
             params.add("code_verifier", codeVerifier);
 
             HttpHeaders headers = new HttpHeaders();
@@ -136,29 +136,92 @@ public class AuthController {
                     request =
                     new HttpEntity<>(params, headers);
 
-            ResponseEntity<String> response =
+            ResponseEntity<Map> tokenResponse =
                     restTemplate.postForEntity(
                             tokenUrl,
                             request,
-                            String.class
+                            Map.class
                     );
 
-            return "Login Successful";
+            session.setAttribute(
+                    "access_token",
+                    tokenResponse.getBody()
+                            .get("access_token"));
+
+            session.setAttribute(
+                    "instance_url",
+                    tokenResponse.getBody()
+                            .get("instance_url"));
+
+            return ResponseEntity.ok(
+                    "Salesforce Login Successful");
 
         } catch (Exception e) {
 
             e.printStackTrace();
 
-            return "Login Failed : " + e.getMessage();
+            return ResponseEntity
+                    .badRequest()
+                    .body("Login Failed : "
+                            + e.getMessage());
         }
     }
 
     // ---------------- VALIDATION RULES ----------------
 
     @GetMapping("/api/validation-rules")
-    public ResponseEntity<?> getRules() {
+    public ResponseEntity<?> getRules(
+            HttpSession session) {
 
-        return ResponseEntity.ok("working");
+        try {
+
+            String accessToken =
+                    (String) session.getAttribute(
+                            "access_token");
+
+            String instanceUrl =
+                    (String) session.getAttribute(
+                            "instance_url");
+
+            if (accessToken == null) {
+
+                return ResponseEntity
+                        .badRequest()
+                        .body("Please login first");
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+
+            headers.setBearerAuth(accessToken);
+
+            HttpEntity<String> entity =
+                    new HttpEntity<>(headers);
+
+            String toolingApiUrl =
+                    instanceUrl +
+                    "/services/data/v59.0/tooling/query/" +
+                    "?q=SELECT+Id,ValidationName,Active+" +
+                    "FROM+ValidationRule";
+
+            ResponseEntity<String> response =
+                    restTemplate.exchange(
+                            toolingApiUrl,
+                            HttpMethod.GET,
+                            entity,
+                            String.class
+                    );
+
+            return ResponseEntity.ok(
+                    response.getBody());
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return ResponseEntity
+                    .badRequest()
+                    .body("Error : " + e.getMessage());
+        }
     }
 
     // ---------------- TOGGLE RULE ----------------
