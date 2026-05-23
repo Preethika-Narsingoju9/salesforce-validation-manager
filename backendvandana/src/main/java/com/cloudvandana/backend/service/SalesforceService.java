@@ -282,26 +282,46 @@ public class SalesforceService {
 
     // ---------------- RULES ----------------
 
-    public Map getValidationRules() {
+//     public Map getValidationRules() {
 
-        String url = cache.get("instance_url")
-                + "/services/data/v62.0/tooling/query/?q="
-                + "SELECT+Id,Name,Active+FROM+ValidationRule+LIMIT+50";
+//         String url = cache.get("instance_url")
+//                 + "/services/data/v62.0/tooling/query/?q="
+//                 + "SELECT+Id,Name,Active+FROM+ValidationRule+LIMIT+50";
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(cache.get("access_token"));
+//         HttpHeaders headers = new HttpHeaders();
+//         headers.setBearerAuth(cache.get("access_token"));
 
-        HttpEntity<String> entity = new HttpEntity<>(headers);
+//         HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        ResponseEntity<Map> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                entity,
-                Map.class
-        );
+//         ResponseEntity<Map> response = restTemplate.exchange(
+//                 url,
+//                 HttpMethod.GET,
+//                 entity,
+//                 Map.class
+//         );
 
-        return response.getBody();
-    }
+//         return response.getBody();
+//     }
+public Map getValidationRules() {
+
+    String url = cache.get("instance_url")
+            + "/services/data/v62.0/tooling/query/?q="
+            + "SELECT+Id,ValidationName,Active+FROM+ValidationRule+LIMIT+50";
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setBearerAuth(cache.get("access_token"));
+
+    HttpEntity<String> entity = new HttpEntity<>(headers);
+
+    ResponseEntity<Map> response = restTemplate.exchange(
+            url,
+            HttpMethod.GET,
+            entity,
+            Map.class
+    );
+
+    return response.getBody();
+}
 
     // ---------------- TOGGLE ----------------
 
