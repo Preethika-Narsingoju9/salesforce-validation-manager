@@ -11,15 +11,39 @@ import jakarta.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Base64;
 
+
 @RestController
 @CrossOrigin(origins = "https://salesforce-frontend-41ny.onrender.com")
 public class AuthController {
+
+
+    private String generateCodeVerifier() {
+    byte[] code = new byte[32];
+    new SecureRandom().nextBytes(code);
+
+    return Base64.getUrlEncoder()
+            .withoutPadding()
+            .encodeToString(code);
+}
+
+private String generateCodeChallenge(String codeVerifier) throws Exception {
+
+    byte[] bytes = MessageDigest.getInstance("SHA-256")
+            .digest(codeVerifier.getBytes(StandardCharsets.UTF_8));
+
+    return Base64.getUrlEncoder()
+            .withoutPadding()
+            .encodeToString(bytes);
+}
 
     private final SalesforceService salesforceService;
 
@@ -36,20 +60,42 @@ public class AuthController {
     @Value("${salesforce.auth.url}")
     private String authUrl;
 
-    
-@GetMapping("/api/login")
-public void login(HttpServletResponse response) throws IOException {
+ 
+    @GetMapping("/login")
+public void login(HttpServletResponse response,
+                  HttpSession session) throws Exception {
 
-    String clientId = "3MVG97L7PWbPq6UwCL.6YvIjV90HG23keKInIpqpKBwC0bwHPdUdg8OJmqYkTHDhnnS4OUmE5QdfydRcRoTaQ";
-    String redirectUri = "https://salesforce-validation-manager-snah.onrender.com/api/callback";
+    String codeVerifier = generateCodeVerifier();
 
-    String url =
-        "https://login.salesforce.com/services/oauth2/authorize" +
-        "?response_type=code" +
-        "&client_id=" + clientId +
-        "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8);
+    String codeChallenge = generateCodeChallenge(codeVerifier);
 
-    response.sendRedirect(url);
+    // Store verifier in session
+    session.setAttribute("code_verifier", codeVerifier);
+
+    String authUrl =
+            salesforceAuthUrl +
+            "?response_type=code" +
+            "&client_id=" + clientId +
+            "&redirect_uri=" +
+            URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
+            "&code_challenge=" + codeChallenge +
+            "&code_challenge_method=S256";
+
+    response.sendRedirect(authUrl);
+}
+// @GetMapping("/api/login")
+// public void login(HttpServletResponse response) throws IOException {
+
+//     String clientId = "3MVG97L7PWbPq6UwCL.6YvIjV90HG23keKInIpqpKBwC0bwHPdUdg8OJmqYkTHDhnnS4OUmE5QdfydRcRoTaQ";
+//     String redirectUri = "https://salesforce-validation-manager-snah.onrender.com/api/callback";
+
+//     String url =
+//         "https://login.salesforce.com/services/oauth2/authorize" +
+//         "?response_type=code" +
+//         "&client_id=" + clientId +
+//         "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8);
+
+//     response.sendRedirect(url);
 }
 //     @GetMapping("/api/login")
 // public void login(HttpServletResponse response, HttpSession session) throws Exception {
@@ -112,23 +158,55 @@ public void login(HttpServletResponse response) throws IOException {
 
 //     @GetMapping("/api/callback")
 
-@GetMapping("/api/callback")
-public ResponseEntity<String> callback(@RequestParam("code") String code) {
+// @GetMapping("/api/callback")
+// public ResponseEntity<String> callback(@RequestParam("code") String code) {
 
-    // exchange code for access token
-    String tokenUrl = "https://login.salesforce.com/services/oauth2/token";
+//     // exchange code for access token
+//     String tokenUrl = "https://login.salesforce.com/services/oauth2/token";
 
-    // use RestTemplate to POST:
-    // grant_type=authorization_code
-    // code
-    // client_id
-    // client_secret
-    // redirect_uri
+//     // use RestTemplate to POST:
+//     // grant_type=authorization_code
+//     // code
+//     // client_id
+//     // client_secret
+//     // redirect_uri
 
-    return ResponseEntity.ok("Login Successful");
+//     return ResponseEntity.ok("Login Successful");
+// }
+
+@GetMapping("/callback")
+public String callback(@RequestParam("code") String code,
+                       HttpSession session) {
+
+    String codeVerifier =
+            (String) session.getAttribute("code_verifier");
+
+    MultiValueMap<String, String> params =
+            new LinkedMultiValueMap<>();
+
+    params.add("grant_type", "authorization_code");
+    params.add("client_id", clientId);
+    params.add("client_secret", clientSecret);
+    params.add("redirect_uri", redirectUri);
+    params.add("code", code);
+
+    // IMPORTANT
+    params.add("code_verifier", codeVerifier);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+    HttpEntity<MultiValueMap<String, String>> request =
+            new HttpEntity<>(params, headers);
+
+    ResponseEntity<String> response = restTemplate.postForEntity(
+            tokenUrl,
+            request,
+            String.class
+    );
+
+    return "Login Successful";
 }
-
-
 // public void callback(@RequestParam(value = "code", required = false) String code,
 //                      HttpServletResponse response,
 //                      HttpSession session) throws Exception {
