@@ -427,6 +427,7 @@ import com.cloudvandana.backend.service.SalesforceService;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -536,28 +537,49 @@ public class AuthController {
 
     //     response.sendRedirect(loginUrl);
     // }
-    @GetMapping("/api/login")
-public void login(HttpServletResponse response) throws Exception {
+//     @GetMapping("/api/login")
+// public void login(HttpServletResponse response) throws Exception {
+
+//     String codeVerifier = generateCodeVerifier();
+//     String codeChallenge = generateCodeChallenge(codeVerifier);
+
+//     Cookie cookie = new Cookie("code_verifier", codeVerifier);
+//     cookie.setHttpOnly(true);
+//     cookie.setSecure(true);
+//     cookie.setPath("/");
+//     cookie.setMaxAge(300);
+//     response.addCookie(cookie);
+
+//     String loginUrl =
+//             "https://login.salesforce.com/services/oauth2/authorize"
+//             + "?response_type=code"
+//             + "&client_id=" + clientId
+//             + "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8)
+//             + "&code_challenge=" + codeChallenge
+//             + "&code_challenge_method=S256";
+
+//     System.out.println("REDIRECTING TO: " + loginUrl);
+
+//     response.sendRedirect(loginUrl);
+// }
+@GetMapping("/api/login")
+public void login(HttpServletResponse response, HttpSession session)
+        throws Exception {
 
     String codeVerifier = generateCodeVerifier();
     String codeChallenge = generateCodeChallenge(codeVerifier);
 
-    Cookie cookie = new Cookie("code_verifier", codeVerifier);
-    cookie.setHttpOnly(true);
-    cookie.setSecure(true);
-    cookie.setPath("/");
-    cookie.setMaxAge(300);
-    response.addCookie(cookie);
+    session.setAttribute("code_verifier", codeVerifier);
 
     String loginUrl =
-            "https://login.salesforce.com/services/oauth2/authorize"
+            authUrl
             + "?response_type=code"
             + "&client_id=" + clientId
             + "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8)
             + "&code_challenge=" + codeChallenge
             + "&code_challenge_method=S256";
 
-    System.out.println("REDIRECTING TO: " + loginUrl);
+    System.out.println("LOGIN URL => " + loginUrl);
 
     response.sendRedirect(loginUrl);
 }
@@ -565,41 +587,70 @@ public void login(HttpServletResponse response) throws Exception {
     // ---------------- CALLBACK ----------------
 
     @GetMapping("/api/callback")
-    public void callback(
-            @RequestParam("code") String code,
-            @CookieValue(
-                    value = "code_verifier",
-                    required = false)
-            String codeVerifier,
-            HttpServletResponse response)
-            throws IOException {
+public void callback(
+        @RequestParam("code") String code,
+        HttpSession session,
+        HttpServletResponse response)
+        throws IOException {
 
-        try {
+    try {
 
-            if (codeVerifier == null) {
+        String codeVerifier =
+                (String) session.getAttribute("code_verifier");
 
-                response.getWriter().write(
-                        "PKCE code verifier missing");
-
-                return;
-            }
-
-            salesforceService.getAccessToken(
-                    code,
-                    codeVerifier);
-
-            response.sendRedirect(
-                    "https://salesforce-frontend-41ny.onrender.com");
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-            response.getWriter().write(
-                    "LOGIN FAILED : "
-                            + e.getMessage());
+        if (codeVerifier == null) {
+            throw new RuntimeException("Missing code_verifier in session");
         }
+
+        salesforceService.getAccessToken(code, codeVerifier);
+
+        response.sendRedirect(
+                "https://salesforce-frontend-41ny.onrender.com");
+
+    } catch (Exception e) {
+
+        e.printStackTrace();
+
+        response.getWriter()
+                .write("LOGIN FAILED: " + e.getMessage());
     }
+}
+    // @GetMapping("/api/callback")
+    // public void callback(
+    //         @RequestParam("code") String code,
+    //         @CookieValue(
+    //                 value = "code_verifier",
+    //                 required = false)
+    //         String codeVerifier,
+    //         HttpServletResponse response)
+    //         throws IOException {
+
+    //     try {
+
+    //         if (codeVerifier == null) {
+
+    //             response.getWriter().write(
+    //                     "PKCE code verifier missing");
+
+    //             return;
+    //         }
+
+    //         salesforceService.getAccessToken(
+    //                 code,
+    //                 codeVerifier);
+
+    //         response.sendRedirect(
+    //                 "https://salesforce-frontend-41ny.onrender.com");
+
+    //     } catch (Exception e) {
+
+    //         e.printStackTrace();
+
+    //         response.getWriter().write(
+    //                 "LOGIN FAILED : "
+    //                         + e.getMessage());
+    //     }
+    // }
 
     // ---------------- VALIDATION RULES ----------------
 
