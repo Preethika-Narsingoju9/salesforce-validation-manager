@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.io.IOException;
 
 @RestController
 @CrossOrigin(origins = "https://salesforce-frontend-41ny.onrender.com")
