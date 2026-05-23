@@ -240,12 +240,193 @@
 // }
 
 
+// package com.cloudvandana.backend.controller;
+
+// import com.cloudvandana.backend.service.SalesforceService;
+
+// import jakarta.servlet.http.HttpServletResponse;
+// import jakarta.servlet.http.HttpSession;
+
+// import org.springframework.beans.factory.annotation.Value;
+// import org.springframework.http.ResponseEntity;
+// import org.springframework.web.bind.annotation.*;
+
+// import java.io.IOException;
+// import java.net.URLEncoder;
+// import java.nio.charset.StandardCharsets;
+// import java.security.MessageDigest;
+// import java.security.SecureRandom;
+// import java.util.Base64;
+
+// @RestController
+// @CrossOrigin(
+//         origins = "https://salesforce-frontend-41ny.onrender.com",
+//         allowCredentials = "true"
+// )
+// public class AuthController {
+
+//     private final SalesforceService salesforceService;
+
+//     public AuthController(SalesforceService salesforceService) {
+//         this.salesforceService = salesforceService;
+//     }
+
+//     @Value("${salesforce.client.id}")
+//     private String clientId;
+
+//     @Value("${salesforce.redirect.uri}")
+//     private String redirectUri;
+
+//     @Value("${salesforce.auth.url}")
+//     private String authUrl;
+
+//     // ---------------- PKCE ----------------
+
+//     private String generateCodeVerifier() {
+
+//         byte[] code = new byte[32];
+
+//         new SecureRandom().nextBytes(code);
+
+//         return Base64.getUrlEncoder()
+//                 .withoutPadding()
+//                 .encodeToString(code);
+//     }
+
+//     private String generateCodeChallenge(String codeVerifier)
+//             throws Exception {
+
+//         byte[] bytes =
+//                 MessageDigest.getInstance("SHA-256")
+//                         .digest(
+//                                 codeVerifier.getBytes(
+//                                         StandardCharsets.UTF_8));
+
+//         return Base64.getUrlEncoder()
+//                 .withoutPadding()
+//                 .encodeToString(bytes);
+//     }
+
+//     // ---------------- LOGIN ----------------
+
+//     @GetMapping("/api/login")
+//     public void login(
+//             HttpServletResponse response,
+//             HttpSession session)
+//             throws Exception {
+
+//         String codeVerifier = generateCodeVerifier();
+
+//         String codeChallenge =
+//                 generateCodeChallenge(codeVerifier);
+
+//         session.setAttribute(
+//                 "code_verifier",
+//                 codeVerifier);
+
+//         String loginUrl =
+//                 authUrl +
+//                 "?response_type=code" +
+//                 "&client_id=" + clientId +
+//                 "&redirect_uri=" +
+//                 URLEncoder.encode(
+//                         redirectUri,
+//                         StandardCharsets.UTF_8) +
+//                 "&code_challenge=" +
+//                 codeChallenge +
+//                 "&code_challenge_method=S256";
+
+//         response.sendRedirect(loginUrl);
+//     }
+
+//     // ---------------- CALLBACK ----------------
+
+//     @GetMapping("/api/callback")
+//     public void callback(
+//             @RequestParam("code") String code,
+//             HttpSession session,
+//             HttpServletResponse response)
+//             throws IOException {
+
+//         try {
+
+//             String codeVerifier =
+//                     (String) session.getAttribute(
+//                             "code_verifier");
+
+//             salesforceService.getAccessToken(
+//                     code,
+//                     codeVerifier);
+
+//             response.sendRedirect(
+//                     "https://salesforce-frontend-41ny.onrender.com");
+
+//         } catch (Exception e) {
+
+//             e.printStackTrace();
+
+//             response.sendRedirect(
+//                     "https://salesforce-frontend-41ny.onrender.com");
+//         }
+//     }
+
+//     // ---------------- VALIDATION RULES ----------------
+
+//     @GetMapping("/api/validation-rules")
+//     public ResponseEntity<?> getRules() {
+
+//         try {
+
+//             return ResponseEntity.ok(
+//                     salesforceService
+//                             .getValidationRules());
+
+//         } catch (Exception e) {
+
+//             e.printStackTrace();
+
+//             return ResponseEntity
+//                     .badRequest()
+//                     .body(
+//                             "Error fetching validation rules : "
+//                                     + e.getMessage());
+//         }
+//     }
+
+//     // ---------------- TOGGLE RULE ----------------
+
+//     @GetMapping("/api/toggle-rule")
+//     public ResponseEntity<?> toggle(
+//             @RequestParam String id,
+//             @RequestParam Boolean active) {
+
+//         try {
+
+//             return ResponseEntity.ok(
+//                     salesforceService
+//                             .toggleValidationRule(
+//                                     id,
+//                                     active));
+
+//         } catch (Exception e) {
+
+//             e.printStackTrace();
+
+//             return ResponseEntity
+//                     .badRequest()
+//                     .body(
+//                             "Error updating validation rule : "
+//                                     + e.getMessage());
+//         }
+//     }
+// }
+
 package com.cloudvandana.backend.controller;
 
 import com.cloudvandana.backend.service.SalesforceService;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -267,7 +448,9 @@ public class AuthController {
 
     private final SalesforceService salesforceService;
 
-    public AuthController(SalesforceService salesforceService) {
+    public AuthController(
+            SalesforceService salesforceService) {
+
         this.salesforceService = salesforceService;
     }
 
@@ -293,7 +476,8 @@ public class AuthController {
                 .encodeToString(code);
     }
 
-    private String generateCodeChallenge(String codeVerifier)
+    private String generateCodeChallenge(
+            String codeVerifier)
             throws Exception {
 
         byte[] bytes =
@@ -311,18 +495,32 @@ public class AuthController {
 
     @GetMapping("/api/login")
     public void login(
-            HttpServletResponse response,
-            HttpSession session)
+            HttpServletResponse response)
             throws Exception {
 
-        String codeVerifier = generateCodeVerifier();
+        String codeVerifier =
+                generateCodeVerifier();
 
         String codeChallenge =
-                generateCodeChallenge(codeVerifier);
+                generateCodeChallenge(
+                        codeVerifier);
 
-        session.setAttribute(
-                "code_verifier",
-                codeVerifier);
+        // SAVE IN COOKIE INSTEAD OF SESSION
+
+        Cookie cookie =
+                new Cookie(
+                        "code_verifier",
+                        codeVerifier);
+
+        cookie.setHttpOnly(true);
+
+        cookie.setSecure(true);
+
+        cookie.setPath("/");
+
+        cookie.setMaxAge(300);
+
+        response.addCookie(cookie);
 
         String loginUrl =
                 authUrl +
@@ -344,15 +542,22 @@ public class AuthController {
     @GetMapping("/api/callback")
     public void callback(
             @RequestParam("code") String code,
-            HttpSession session,
+            @CookieValue(
+                    value = "code_verifier",
+                    required = false)
+            String codeVerifier,
             HttpServletResponse response)
             throws IOException {
 
         try {
 
-            String codeVerifier =
-                    (String) session.getAttribute(
-                            "code_verifier");
+            if (codeVerifier == null) {
+
+                response.getWriter().write(
+                        "PKCE code verifier missing");
+
+                return;
+            }
 
             salesforceService.getAccessToken(
                     code,
@@ -365,8 +570,9 @@ public class AuthController {
 
             e.printStackTrace();
 
-            response.sendRedirect(
-                    "https://salesforce-frontend-41ny.onrender.com");
+            response.getWriter().write(
+                    "LOGIN FAILED : "
+                            + e.getMessage());
         }
     }
 
