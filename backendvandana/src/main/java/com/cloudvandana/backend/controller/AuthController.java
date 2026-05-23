@@ -89,38 +89,42 @@ public void login(HttpServletResponse response, HttpSession session) throws Exce
 
     // ---------------- VALIDATION RULES ----------------
     
-
-    public ValidationRuleResponse getValidationRules() {
-
-    if (instanceUrl == null || accessToken == null) {
-        throw new RuntimeException("User not logged in");
-    }
-
-    try {
-        String url = instanceUrl +
-                "/services/data/v62.0/tooling/query/?q=" +
-                "SELECT+Id,Name,Active+FROM+ValidationRule+LIMIT+50";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        ResponseEntity<ValidationRuleResponse> response =
-                restTemplate.exchange(
-                        url,
-                        HttpMethod.GET,
-                        entity,
-                        ValidationRuleResponse.class
-                );
-
-        return response.getBody();
-
-    } catch (Exception e) {
-        e.printStackTrace();
-        throw new RuntimeException("Salesforce API failed: " + e.getMessage());
-    }
+@GetMapping("/api/validation-rules")
+public ValidationRuleResponse getValidationRules() {
+    return salesforceService.getValidationRules();
 }
+
+//     public ValidationRuleResponse getValidationRules() {
+
+//     if (instanceUrl == null || accessToken == null) {
+//         throw new RuntimeException("User not logged in");
+//     }
+
+//     try {
+//         String url = instanceUrl +
+//                 "/services/data/v62.0/tooling/query/?q=" +
+//                 "SELECT+Id,Name,Active+FROM+ValidationRule+LIMIT+50";
+
+//         HttpHeaders headers = new HttpHeaders();
+//         headers.setBearerAuth(accessToken);
+
+//         HttpEntity<String> entity = new HttpEntity<>(headers);
+
+//         ResponseEntity<ValidationRuleResponse> response =
+//                 restTemplate.exchange(
+//                         url,
+//                         HttpMethod.GET,
+//                         entity,
+//                         ValidationRuleResponse.class
+//                 );
+
+//         return response.getBody();
+
+//     } catch (Exception e) {
+//         e.printStackTrace();
+//         throw new RuntimeException("Salesforce API failed: " + e.getMessage());
+//     }
+// }
 
     // ---------------- TOGGLE RULE ----------------
     @GetMapping("/api/toggle-rule")
