@@ -415,69 +415,69 @@ public class SalesforceService {
 
     // ---------------- LOGIN ----------------
 
-    public TokenResponse getAccessTokenSimple(String code) {
+//     public TokenResponse getAccessTokenSimple(String code) {
 
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+//     HttpHeaders headers = new HttpHeaders();
+//     headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-    MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+//     MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
 
-    body.add("grant_type", "authorization_code");
-    body.add("client_id", clientId);
-    body.add("client_secret", clientSecret);
-    body.add("redirect_uri", redirectUri);
-    body.add("code", code);
+//     body.add("grant_type", "authorization_code");
+//     body.add("client_id", clientId);
+//     body.add("client_secret", clientSecret);
+//     body.add("redirect_uri", redirectUri);
+//     body.add("code", code);
 
-    HttpEntity<?> request = new HttpEntity<>(body, headers);
+//     HttpEntity<?> request = new HttpEntity<>(body, headers);
 
-    ResponseEntity<TokenResponse> response =
-            restTemplate.postForEntity(tokenUrl, request, TokenResponse.class);
+//     ResponseEntity<TokenResponse> response =
+//             restTemplate.postForEntity(tokenUrl, request, TokenResponse.class);
 
-    this.accessToken = response.getBody().getAccess_token();
-    this.instanceUrl = response.getBody().getInstance_url();
+//     this.accessToken = response.getBody().getAccess_token();
+//     this.instanceUrl = response.getBody().getInstance_url();
 
-    return response.getBody();
-}
+//     return response.getBody();
+// }
 
-//     public TokenResponse getAccessToken(
-//             String code,
-//             String codeVerifier) {
+    public TokenResponse getAccessToken(
+            String code,
+            String codeVerifier) {
 
-//         HttpHeaders headers = new HttpHeaders();
-//         headers.setContentType(
-//                 MediaType.APPLICATION_FORM_URLENCODED);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(
+                MediaType.APPLICATION_FORM_URLENCODED);
 
-//         MultiValueMap<String, String> body =
-//                 new LinkedMultiValueMap<>();
+        MultiValueMap<String, String> body =
+                new LinkedMultiValueMap<>();
 
-//         body.add("grant_type", "authorization_code");
-//         body.add("client_id", clientId);
-//         body.add("client_secret", clientSecret);
-//         body.add("redirect_uri", redirectUri);
-//         body.add("code", code);
-//         body.add("code_verifier", codeVerifier);
+        body.add("grant_type", "authorization_code");
+        body.add("client_id", clientId);
+        body.add("client_secret", clientSecret);
+        body.add("redirect_uri", redirectUri);
+        body.add("code", code);
+        body.add("code_verifier", codeVerifier);
 
-//         HttpEntity<MultiValueMap<String, String>> request =
-//                 new HttpEntity<>(body, headers);
+        HttpEntity<MultiValueMap<String, String>> request =
+                new HttpEntity<>(body, headers);
 
-//         ResponseEntity<TokenResponse> response =
-//                 restTemplate.postForEntity(
-//                         tokenUrl,
-//                         request,
-//                         TokenResponse.class);
+        ResponseEntity<TokenResponse> response =
+                restTemplate.postForEntity(
+                        tokenUrl,
+                        request,
+                        TokenResponse.class);
 
-//         cache.put(
-//                 "access_token",
-//                 response.getBody().getAccess_token()
-//         );
+        cache.put(
+                "access_token",
+                response.getBody().getAccess_token()
+        );
 
-//         cache.put(
-//                 "instance_url",
-//                 response.getBody().getInstance_url()
-//         );
+        cache.put(
+                "instance_url",
+                response.getBody().getInstance_url()
+        );
 
-//         return response.getBody();
-//     }
+        return response.getBody();
+    }
 
     // ---------------- GET RULES ----------------
 
