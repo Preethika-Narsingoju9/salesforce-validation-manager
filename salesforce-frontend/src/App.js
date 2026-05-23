@@ -3,131 +3,176 @@
 // import "./App.css";
 
 // function App() {
+
 //   const [rules, setRules] = useState([]);
 //   const [loading, setLoading] = useState(false);
 
 //   const API_BASE =
 //     "https://salesforce-validation-manager-snah.onrender.com";
 
-//   // LOGIN TO SALESFORCE
+//   // LOGIN
 
 //   const loginToSalesforce = () => {
-//   window.location.href = `${API_BASE}/api/login`;
-// };
 
+//     window.location.href =
+//       `${API_BASE}/api/login`;
+//   };
 
-//   // const loginToSalesforce = () => {
-//   //   window.location.href = `${API_BASE}/api/login`;
-//   // };
+//   const axiosInstance = axios.create({
+//   baseURL: API_BASE,
+//   withCredentials: true
+// });
+// axiosInstance.get("/api/validation-rules");
+//   // GET RULES
 
-// //   const loginToSalesforce = () => {
-// //   const clientId = "3MVG97L7PWbPq6UwCL.6YvIjV90HG23keKInIpqpKBwC0bwHPdUdg8OJmqYkTHDhnnS4OUmE5QdfydRcRoTaQ";
-
-// //   const redirectUri =
-// //     "https://salesforce-validation-manager-snah.onrender.com/api/callback";
-
-// //   const loginUrl =
-// //     `https://login.salesforce.com/services/oauth2/authorize` +
-// //     `?response_type=code` +
-// //     `&client_id=${clientId}` +
-// //     `&redirect_uri=${encodeURIComponent(redirectUri)}`;
-
-// //   window.location.href = loginUrl;
-// // };
-
-//   // GET VALIDATION RULES
 //   const getValidationRules = async () => {
+
 //     try {
+
 //       setLoading(true);
 
-//       const response = await axios.get(`${API_BASE}/api/validation-rules`);
+//       const response = await axios.get(
+//         `${API_BASE}/api/validation-rules`,
+//         {
+//           withCredentials: true
+//         }
+//       );
 
-//       setRules(response.data?.records ?? []);
+//       setRules(response.data.records || []);
+
 //     } catch (error) {
+
 //       console.error(error);
-//       alert("Error fetching validation rules");
+
+//       alert("Failed fetching validation rules");
+
 //     } finally {
+
 //       setLoading(false);
 //     }
 //   };
 
-//   // TOGGLE RULE
-//   const toggleRule = async (id, currentStatus) => {
+//   // TOGGLE
+
+//   const toggleRule = async (
+//     id,
+//     currentStatus
+//   ) => {
+
 //     try {
+
 //       await axios.get(
-//         `${API_BASE}/toggle-rule?id=${id}&active=${!currentStatus}`
+//         `${API_BASE}/api/toggle-rule?id=${id}&active=${!currentStatus}`,
+//         {
+//           withCredentials: true
+//         }
 //       );
 
 //       alert("Validation Rule Updated");
 
-//       // refresh list
 //       getValidationRules();
+
 //     } catch (error) {
+
 //       console.error(error);
+
 //       alert("Error updating validation rule");
 //     }
 //   };
 
 //   // DEPLOY BUTTON
+
 //   const deployChanges = () => {
+
 //     alert(
-//       "Changes are already deployed directly to Salesforce via Tooling API."
+//       "Changes are deployed directly to Salesforce using Tooling API."
 //     );
 //   };
 
 //   return (
+
 //     <div className="container">
-//       <h1>Salesforce Validation Rule Manager</h1>
+
+//       <h1>
+//         Salesforce Validation Rule Manager
+//       </h1>
 
 //       <div className="button-container">
+
 //         <button onClick={loginToSalesforce}>
 //           Login to Salesforce
 //         </button>
 
 //         <button onClick={getValidationRules}>
-//           Get Validation Rules
+//           Validation Rules
 //         </button>
 
-//         <button className="deploy-btn" onClick={deployChanges}>
+//         <button
+//           className="deploy-btn"
+//           onClick={deployChanges}
+//         >
 //           Deploy Changes
 //         </button>
+
 //       </div>
 
-//       {/* LOADING STATE */}
-//       {loading && <p>Loading validation rules...</p>}
+//       {loading && (
+//         <p>Loading validation rules...</p>
+//       )}
 
-//       {/* TABLE */}
 //       {rules.length > 0 && (
+
 //         <table>
+
 //           <thead>
+
 //             <tr>
 //               <th>Rule Name</th>
 //               <th>Status</th>
 //               <th>Action</th>
 //             </tr>
+
 //           </thead>
 
 //           <tbody>
+
 //             {rules.map((rule) => (
+
 //               <tr key={rule.Id}>
+
 //                 <td>{rule.Name}</td>
 
-//                 <td>{rule.Active ? "Active" : "Inactive"}</td>
+//                 <td>
+//                   {rule.Active
+//                     ? "Active"
+//                     : "Inactive"}
+//                 </td>
 
 //                 <td>
+
 //                   <button
 //                     onClick={() =>
-//                       toggleRule(rule.Id, rule.Active)
+//                       toggleRule(
+//                         rule.Id,
+//                         rule.Active
+//                       )
 //                     }
 //                   >
-//                     {rule.Active ? "Deactivate" : "Activate"}
+//                     {rule.Active
+//                       ? "Deactivate"
+//                       : "Activate"}
 //                   </button>
+
 //                 </td>
+
 //               </tr>
 //             ))}
+
 //           </tbody>
+
 //         </table>
 //       )}
+
 //     </div>
 //   );
 // }
@@ -135,102 +180,73 @@
 // export default App;
 
 
+
 import React, { useState } from "react";
 import axios from "axios";
 import "./App.css";
 
 function App() {
-
   const [rules, setRules] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const API_BASE =
     "https://salesforce-validation-manager-snah.onrender.com";
 
-  // LOGIN
+  // Axios instance (clean + reusable)
+  const axiosInstance = axios.create({
+    baseURL: API_BASE,
+    withCredentials: true,
+  });
 
+  // ---------------- LOGIN ----------------
   const loginToSalesforce = () => {
-
-    window.location.href =
-      `${API_BASE}/api/login`;
+    window.location.href = `${API_BASE}/api/login`;
   };
 
-  // GET RULES
-
+  // ---------------- GET RULES ----------------
   const getValidationRules = async () => {
-
     try {
-
       setLoading(true);
 
-      const response = await axios.get(
-        `${API_BASE}/api/validation-rules`,
-        {
-          withCredentials: true
-        }
-      );
+      const response = await axiosInstance.get("/api/validation-rules");
 
       setRules(response.data.records || []);
-
     } catch (error) {
-
       console.error(error);
-
       alert("Failed fetching validation rules");
-
     } finally {
-
       setLoading(false);
     }
   };
 
-  // TOGGLE
-
-  const toggleRule = async (
-    id,
-    currentStatus
-  ) => {
-
+  // ---------------- TOGGLE RULE ----------------
+  const toggleRule = async (id, currentStatus) => {
     try {
-
-      await axios.get(
-        `${API_BASE}/api/toggle-rule?id=${id}&active=${!currentStatus}`,
-        {
-          withCredentials: true
-        }
+      await axiosInstance.get(
+        `/api/toggle-rule?id=${id}&active=${!currentStatus}`
       );
 
       alert("Validation Rule Updated");
 
       getValidationRules();
-
     } catch (error) {
-
       console.error(error);
-
       alert("Error updating validation rule");
     }
   };
 
-  // DEPLOY BUTTON
-
+  // ---------------- DEPLOY BUTTON ----------------
   const deployChanges = () => {
-
     alert(
       "Changes are deployed directly to Salesforce using Tooling API."
     );
   };
 
   return (
-
     <div className="container">
-
-      <h1>
-        Salesforce Validation Rule Manager
-      </h1>
+      <h1>Salesforce Validation Rule Manager</h1>
 
       <div className="button-container">
-
         <button onClick={loginToSalesforce}>
           Login to Salesforce
         </button>
@@ -245,66 +261,49 @@ function App() {
         >
           Deploy Changes
         </button>
-
       </div>
 
-      {loading && (
-        <p>Loading validation rules...</p>
+      {loading && <p>Loading validation rules...</p>}
+
+      {!loading && rules.length === 0 && (
+        <p>No validation rules found</p>
       )}
 
       {rules.length > 0 && (
-
         <table>
-
           <thead>
-
             <tr>
               <th>Rule Name</th>
               <th>Status</th>
               <th>Action</th>
             </tr>
-
           </thead>
 
           <tbody>
-
             {rules.map((rule) => (
-
               <tr key={rule.Id}>
-
                 <td>{rule.Name}</td>
 
                 <td>
-                  {rule.Active
-                    ? "Active"
-                    : "Inactive"}
+                  {rule.Active ? "Active" : "Inactive"}
                 </td>
 
                 <td>
-
                   <button
                     onClick={() =>
-                      toggleRule(
-                        rule.Id,
-                        rule.Active
-                      )
+                      toggleRule(rule.Id, rule.Active)
                     }
                   >
                     {rule.Active
                       ? "Deactivate"
                       : "Activate"}
                   </button>
-
                 </td>
-
               </tr>
             ))}
-
           </tbody>
-
         </table>
       )}
-
     </div>
   );
 }
