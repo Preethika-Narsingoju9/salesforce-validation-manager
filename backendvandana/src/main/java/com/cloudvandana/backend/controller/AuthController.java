@@ -34,47 +34,60 @@ public class AuthController {
     private String authUrl;
 
     
+@GetMapping("/api/login")
+public void login(HttpServletResponse response) throws IOException {
 
-    @GetMapping("/api/login")
-public void login(HttpServletResponse response, HttpSession session) throws Exception {
+    String clientId = "YOUR_CLIENT_ID";
+    String redirectUri = "https://salesforce-validation-manager-snah.onrender.com/api/callback";
 
-    SecureRandom random = new SecureRandom();
-    byte[] bytes = new byte[32];
-    random.nextBytes(bytes);
+    String url =
+        "https://login.salesforce.com/services/oauth2/authorize" +
+        "?response_type=code" +
+        "&client_id=" + clientId +
+        "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8);
 
-    String verifier = Base64.getUrlEncoder()
-            .withoutPadding()
-            .encodeToString(bytes);
+    response.sendRedirect(url);
+}
+//     @GetMapping("/api/login")
+// public void login(HttpServletResponse response, HttpSession session) throws Exception {
 
-    MessageDigest md = MessageDigest.getInstance("SHA-256");
-    byte[] digest = md.digest(verifier.getBytes());
+//     SecureRandom random = new SecureRandom();
+//     byte[] bytes = new byte[32];
+//     random.nextBytes(bytes);
 
-    String challenge = Base64.getUrlEncoder()
-            .withoutPadding()
-            .encodeToString(digest);
+//     String verifier = Base64.getUrlEncoder()
+//             .withoutPadding()
+//             .encodeToString(bytes);
 
-    session.setAttribute("pkce_verifier", verifier);
+//     MessageDigest md = MessageDigest.getInstance("SHA-256");
+//     byte[] digest = md.digest(verifier.getBytes());
 
-    String state = Base64.getUrlEncoder()
-            .withoutPadding()
-            .encodeToString(("state-" + System.currentTimeMillis()).getBytes());
+//     String challenge = Base64.getUrlEncoder()
+//             .withoutPadding()
+//             .encodeToString(digest);
 
-    String url = authUrl
-        + "?response_type=code"
-        + "&client_id=" + clientId
-        + "&redirect_uri=" + redirectUri
-        + "&state=" + state
-        + "&code_challenge=" + challenge
-        + "&code_challenge_method=S256";
+//     session.setAttribute("pkce_verifier", verifier);
 
-System.out.println("FINAL AUTH URL = " + url);
-System.out.println("REDIRECT URI RAW = [" + redirectUri + "]");
+//     String state = Base64.getUrlEncoder()
+//             .withoutPadding()
+//             .encodeToString(("state-" + System.currentTimeMillis()).getBytes());
+
+//     String url = authUrl
+//         + "?response_type=code"
+//         + "&client_id=" + clientId
+//         + "&redirect_uri=" + redirectUri
+//         + "&state=" + state
+//         + "&code_challenge=" + challenge
+//         + "&code_challenge_method=S256";
+
+// System.out.println("FINAL AUTH URL = " + url);
+// System.out.println("REDIRECT URI RAW = [" + redirectUri + "]");
 
 
 
         
-    response.sendRedirect(url);
-}
+//     response.sendRedirect(url);
+// }
 
     // ---------------- CALLBACK ----------------
     // @GetMapping("/api/callback")
@@ -92,25 +105,45 @@ System.out.println("REDIRECT URI RAW = [" + redirectUri + "]");
 
     //     response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
     // }
-    @GetMapping("/api/callback")
-public void callback(@RequestParam(value = "code", required = false) String code,
-                     HttpServletResponse response,
-                     HttpSession session) throws Exception {
 
-    if (code == null) {
-        throw new RuntimeException("OAuth failed: code is missing");
-    }
 
-    String verifier = (String) session.getAttribute("pkce_verifier");
+//     @GetMapping("/api/callback")
 
-    if (verifier == null) {
-        throw new RuntimeException("Missing PKCE verifier");
-    }
+@GetMapping("/api/callback")
+public ResponseEntity<String> callback(@RequestParam("code") String code) {
 
-    salesforceService.getAccessToken(code, verifier);
+    // exchange code for access token
+    String tokenUrl = "https://login.salesforce.com/services/oauth2/token";
 
-    response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
+    // use RestTemplate to POST:
+    // grant_type=authorization_code
+    // code
+    // client_id
+    // client_secret
+    // redirect_uri
+
+    return ResponseEntity.ok("Login Successful");
 }
+
+
+// public void callback(@RequestParam(value = "code", required = false) String code,
+//                      HttpServletResponse response,
+//                      HttpSession session) throws Exception {
+
+//     if (code == null) {
+//         throw new RuntimeException("OAuth failed: code is missing");
+//     }
+
+//     String verifier = (String) session.getAttribute("pkce_verifier");
+
+//     if (verifier == null) {
+//         throw new RuntimeException("Missing PKCE verifier");
+//     }
+
+//     salesforceService.getAccessToken(code, verifier);
+
+//     response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
+// }
 
     // ---------------- VALIDATION RULES ----------------
     
