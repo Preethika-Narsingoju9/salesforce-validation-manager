@@ -5,11 +5,14 @@ import com.cloudvandana.backend.dto.ValidationRuleResponse;
 import com.cloudvandana.backend.service.SalesforceService;
 
 import java.net.URLEncoder;
+import java.net.http.HttpHeaders;
 import java.nio.charset.StandardCharsets;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -60,7 +63,13 @@ private String generateCodeChallenge(String codeVerifier) throws Exception {
     @Value("${salesforce.auth.url}")
     private String authUrl;
 
+ //-------------------LOGIN------------------------
  
+    /**
+     * @param response
+     * @param session
+     * @throws Exception
+     */
     @GetMapping("/login")
 public void login(HttpServletResponse response,
                   HttpSession session) throws Exception {
@@ -83,96 +92,9 @@ public void login(HttpServletResponse response,
 
     response.sendRedirect(authUrl);
 }
-// @GetMapping("/api/login")
-// public void login(HttpServletResponse response) throws IOException {
-
-//     String clientId = "3MVG97L7PWbPq6UwCL.6YvIjV90HG23keKInIpqpKBwC0bwHPdUdg8OJmqYkTHDhnnS4OUmE5QdfydRcRoTaQ";
-//     String redirectUri = "https://salesforce-validation-manager-snah.onrender.com/api/callback";
-
-//     String url =
-//         "https://login.salesforce.com/services/oauth2/authorize" +
-//         "?response_type=code" +
-//         "&client_id=" + clientId +
-//         "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8);
-
-//     response.sendRedirect(url);
-}
-//     @GetMapping("/api/login")
-// public void login(HttpServletResponse response, HttpSession session) throws Exception {
-
-//     SecureRandom random = new SecureRandom();
-//     byte[] bytes = new byte[32];
-//     random.nextBytes(bytes);
-
-//     String verifier = Base64.getUrlEncoder()
-//             .withoutPadding()
-//             .encodeToString(bytes);
-
-//     MessageDigest md = MessageDigest.getInstance("SHA-256");
-//     byte[] digest = md.digest(verifier.getBytes());
-
-//     String challenge = Base64.getUrlEncoder()
-//             .withoutPadding()
-//             .encodeToString(digest);
-
-//     session.setAttribute("pkce_verifier", verifier);
-
-//     String state = Base64.getUrlEncoder()
-//             .withoutPadding()
-//             .encodeToString(("state-" + System.currentTimeMillis()).getBytes());
-
-//     String url = authUrl
-//         + "?response_type=code"
-//         + "&client_id=" + clientId
-//         + "&redirect_uri=" + redirectUri
-//         + "&state=" + state
-//         + "&code_challenge=" + challenge
-//         + "&code_challenge_method=S256";
-
-// System.out.println("FINAL AUTH URL = " + url);
-// System.out.println("REDIRECT URI RAW = [" + redirectUri + "]");
 
 
-
-        
-//     response.sendRedirect(url);
-// }
-
-    // ---------------- CALLBACK ----------------
-    // @GetMapping("/api/callback")
-    // public void callback(@RequestParam("code") String code,
-    //                      HttpServletResponse response,
-    //                      HttpSession session) throws Exception {
-
-    //     String verifier = (String) session.getAttribute("pkce_verifier");
-
-    //     if (verifier == null) {
-    //         throw new RuntimeException("Missing PKCE verifier in session");
-    //     }
-
-    //     salesforceService.getAccessToken(code, verifier);
-
-    //     response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
-    // }
-
-
-//     @GetMapping("/api/callback")
-
-// @GetMapping("/api/callback")
-// public ResponseEntity<String> callback(@RequestParam("code") String code) {
-
-//     // exchange code for access token
-//     String tokenUrl = "https://login.salesforce.com/services/oauth2/token";
-
-//     // use RestTemplate to POST:
-//     // grant_type=authorization_code
-//     // code
-//     // client_id
-//     // client_secret
-//     // redirect_uri
-
-//     return ResponseEntity.ok("Login Successful");
-// }
+//--------------CALL BACK---------------------------
 
 @GetMapping("/callback")
 public String callback(@RequestParam("code") String code,
@@ -207,68 +129,15 @@ public String callback(@RequestParam("code") String code,
 
     return "Login Successful";
 }
-// public void callback(@RequestParam(value = "code", required = false) String code,
-//                      HttpServletResponse response,
-//                      HttpSession session) throws Exception {
 
-//     if (code == null) {
-//         throw new RuntimeException("OAuth failed: code is missing");
-//     }
-
-//     String verifier = (String) session.getAttribute("pkce_verifier");
-
-//     if (verifier == null) {
-//         throw new RuntimeException("Missing PKCE verifier");
-//     }
-
-//     salesforceService.getAccessToken(code, verifier);
-
-//     response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
-// }
-
-    // ---------------- VALIDATION RULES ----------------
-    
-// @GetMapping("/api/validation-rules")
-// public ValidationRuleResponse getValidationRules() {
-//     return salesforceService.getValidationRules();
-// }
+//--------------Validation Rule----------
 
 @GetMapping("/api/validation-rules")
 public ResponseEntity<?> getRules() {
     return ResponseEntity.ok("working");
 }
 
-//     public ValidationRuleResponse getValidationRules() {
 
-//     if (instanceUrl == null || accessToken == null) {
-//         throw new RuntimeException("User not logged in");
-//     }
-
-//     try {
-//         String url = instanceUrl +
-//                 "/services/data/v62.0/tooling/query/?q=" +
-//                 "SELECT+Id,Name,Active+FROM+ValidationRule+LIMIT+50";
-
-//         HttpHeaders headers = new HttpHeaders();
-//         headers.setBearerAuth(accessToken);
-
-//         HttpEntity<String> entity = new HttpEntity<>(headers);
-
-//         ResponseEntity<ValidationRuleResponse> response =
-//                 restTemplate.exchange(
-//                         url,
-//                         HttpMethod.GET,
-//                         entity,
-//                         ValidationRuleResponse.class
-//                 );
-
-//         return response.getBody();
-
-//     } catch (Exception e) {
-//         e.printStackTrace();
-//         throw new RuntimeException("Salesforce API failed: " + e.getMessage());
-//     }
-// }
 
     // ---------------- TOGGLE RULE ----------------
     @GetMapping("/api/toggle-rule")
