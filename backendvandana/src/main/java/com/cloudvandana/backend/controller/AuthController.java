@@ -67,6 +67,10 @@ public void login(HttpServletResponse response, HttpSession session) throws Exce
             + "&code_challenge=" + challenge
             + "&code_challenge_method=S256";
 
+        System.out.println("REDIRECT URI SENT = " + redirectUri);
+        System.out.println("CLIENT_ID = " + clientId);
+System.out.println("REDIRECT_URI SENT = [" + redirectUri + "]");
+System.out.println("AUTH URL = " + authUrl);
     response.sendRedirect(url);
 }
 
