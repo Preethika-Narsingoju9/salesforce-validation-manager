@@ -40,7 +40,7 @@ public class AuthController {
 @GetMapping("/api/login")
 public void login(HttpServletResponse response) throws IOException {
 
-    String clientId = "YOUR_CLIENT_ID";
+    String clientId = "3MVG97L7PWbPq6UwCL.6YvIjV90HG23keKInIpqpKBwC0bwHPdUdg8OJmqYkTHDhnnS4OUmE5QdfydRcRoTaQ";
     String redirectUri = "https://salesforce-validation-manager-snah.onrender.com/api/callback";
 
     String url =
