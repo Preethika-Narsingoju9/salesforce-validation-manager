@@ -6,9 +6,12 @@ function App() {
   const [rules, setRules] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const API_BASE =
+    "https://salesforce-validation-manager-snah.onrender.com";
+
   // LOGIN TO SALESFORCE
   const loginToSalesforce = () => {
-    window.location.href = "https://salesforce-validation-manager-snah.onrender.com/login";
+    window.location.href = `${API_BASE}/api/login`;
   };
 
   // GET VALIDATION RULES
@@ -16,12 +19,9 @@ function App() {
     try {
       setLoading(true);
 
-      const response = await axios.get(
-        "https://salesforce-validation-manager-snah.onrender.com/validation-rules"
-      );
+      const response = await axios.get(`${API_BASE}/validation-rules`);
 
-      setRules(response.data.records || []);
-
+      setRules(response.data?.records ?? []);
     } catch (error) {
       console.error(error);
       alert("Error fetching validation rules");
@@ -34,48 +34,43 @@ function App() {
   const toggleRule = async (id, currentStatus) => {
     try {
       await axios.get(
-        `https://salesforce-validation-manager-snah.onrender.com/toggle-rule?id=${id}&active=${!currentStatus}`
+        `${API_BASE}/toggle-rule?id=${id}&active=${!currentStatus}`
       );
 
       alert("Validation Rule Updated");
 
-      // refresh list after update
+      // refresh list
       getValidationRules();
-
     } catch (error) {
       console.error(error);
       alert("Error updating validation rule");
     }
   };
 
-  // DEPLOY BUTTON (REQUIRED BY ASSIGNMENT)
+  // DEPLOY BUTTON
   const deployChanges = () => {
-    alert("Changes are already deployed directly to Salesforce via Tooling API.");
+    alert(
+      "Changes are already deployed directly to Salesforce via Tooling API."
+    );
   };
 
   return (
     <div className="container">
-
       <h1>Salesforce Validation Rule Manager</h1>
 
-      
-
-      
       <div className="button-container">
+        <button onClick={loginToSalesforce}>
+          Login to Salesforce
+        </button>
 
-  <button onClick={loginToSalesforce}>
-    Login to Salesforce
-  </button>
+        <button onClick={getValidationRules}>
+          Get Validation Rules
+        </button>
 
-  <button onClick={getValidationRules}>
-    Get Validation Rules
-  </button>
-
-  <button className="deploy-btn" onClick={deployChanges}>
-    Deploy Changes
-  </button>
-
-</div>
+        <button className="deploy-btn" onClick={deployChanges}>
+          Deploy Changes
+        </button>
+      </div>
 
       {/* LOADING STATE */}
       {loading && <p>Loading validation rules...</p>}
@@ -83,7 +78,6 @@ function App() {
       {/* TABLE */}
       {rules.length > 0 && (
         <table>
-
           <thead>
             <tr>
               <th>Rule Name</th>
@@ -95,12 +89,9 @@ function App() {
           <tbody>
             {rules.map((rule) => (
               <tr key={rule.Id}>
+                <td>{rule.Name}</td>
 
-                <td>{rule.FullName}</td>
-
-                <td>
-                  {rule.Active ? "Active" : "Inactive"}
-                </td>
+                <td>{rule.Active ? "Active" : "Inactive"}</td>
 
                 <td>
                   <button
@@ -111,14 +102,11 @@ function App() {
                     {rule.Active ? "Deactivate" : "Activate"}
                   </button>
                 </td>
-
               </tr>
             ))}
           </tbody>
-
         </table>
       )}
-
     </div>
   );
 }
