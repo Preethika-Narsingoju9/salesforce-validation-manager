@@ -223,40 +223,74 @@ public class AuthController {
     // ---------------- LOGIN ----------------
 
     @GetMapping("/api/login")
-    public void login(HttpServletResponse response, HttpSession session) throws Exception {
+public void login(HttpServletResponse response, HttpSession session) throws Exception {
 
-        String state = UUID.randomUUID().toString();
-        session.setAttribute("oauth_state", state);
+    String codeVerifier = java.util.UUID.randomUUID().toString().replace("-", "");
+    String codeChallenge = java.util.Base64.getUrlEncoder().withoutPadding()
+            .encodeToString(
+                    java.security.MessageDigest.getInstance("SHA-256")
+                            .digest(codeVerifier.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+            );
 
-        String url = authUrl +
-                "?response_type=code" +
-                "&client_id=" + clientId +
-                "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
-                "&state=" + state;
+    session.setAttribute("code_verifier", codeVerifier);
 
-        response.sendRedirect(url);
-    }
+    String url =
+            authUrl +
+            "?response_type=code" +
+            "&client_id=" + clientId +
+            "&redirect_uri=" + java.net.URLEncoder.encode(redirectUri, java.nio.charset.StandardCharsets.UTF_8) +
+            "&code_challenge=" + codeChallenge +
+            "&code_challenge_method=S256";
+
+    response.sendRedirect(url);
+}
+    // @GetMapping("/api/login")
+    // public void login(HttpServletResponse response, HttpSession session) throws Exception {
+
+    //     String state = UUID.randomUUID().toString();
+    //     session.setAttribute("oauth_state", state);
+
+    //     String url = authUrl +
+    //             "?response_type=code" +
+    //             "&client_id=" + clientId +
+    //             "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
+    //             "&state=" + state;
+
+    //     response.sendRedirect(url);
+    // }
 
     // ---------------- CALLBACK ----------------
 
     @GetMapping("/api/callback")
-    public void callback(
-            @RequestParam("code") String code,
-            @RequestParam(value = "state", required = false) String state,
-            HttpServletResponse response,
-            HttpSession session) throws Exception {
+public void callback(
+        @RequestParam("code") String code,
+        HttpSession session,
+        HttpServletResponse response) throws Exception {
 
-        // optional state check
-        String sessionState = (String) session.getAttribute("oauth_state");
+    String codeVerifier = (String) session.getAttribute("code_verifier");
 
-        if (sessionState != null && state != null && !sessionState.equals(state)) {
-            throw new RuntimeException("Invalid OAuth state");
-        }
+    salesforceService.getAccessToken(code, codeVerifier);
 
-        salesforceService.getAccessToken(code);
+    response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
+}
+    // @GetMapping("/api/callback")
+    // public void callback(
+    //         @RequestParam("code") String code,
+    //         @RequestParam(value = "state", required = false) String state,
+    //         HttpServletResponse response,
+    //         HttpSession session) throws Exception {
 
-        response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
-    }
+    //     // optional state check
+    //     String sessionState = (String) session.getAttribute("oauth_state");
+
+    //     if (sessionState != null && state != null && !sessionState.equals(state)) {
+    //         throw new RuntimeException("Invalid OAuth state");
+    //     }
+
+    //     salesforceService.getAccessToken(code);
+
+    //     response.sendRedirect("https://salesforce-frontend-41ny.onrender.com");
+    // }
 
     // ---------------- RULES ----------------
 

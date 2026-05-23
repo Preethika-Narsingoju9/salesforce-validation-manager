@@ -235,28 +235,50 @@ public class SalesforceService {
 
     // ---------------- LOGIN TOKEN ----------------
 
-    public void getAccessToken(String code) {
+    public void getAccessToken(String code, String codeVerifier) {
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+    MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
 
-        body.add("grant_type", "authorization_code");
-        body.add("client_id", clientId);
-        body.add("client_secret", clientSecret);
-        body.add("redirect_uri", redirectUri);
-        body.add("code", code);
+    body.add("grant_type", "authorization_code");
+    body.add("client_id", clientId);
+    body.add("client_secret", clientSecret);
+    body.add("redirect_uri", redirectUri);
+    body.add("code", code);
+    body.add("code_verifier", codeVerifier);
 
-        HttpEntity<MultiValueMap<String, String>> request =
-                new HttpEntity<>(body, headers);
+    HttpEntity<?> request = new HttpEntity<>(body, headers);
 
-        ResponseEntity<Map> response =
-                restTemplate.postForEntity(tokenUrl, request, Map.class);
+    ResponseEntity<Map> response =
+            restTemplate.postForEntity(tokenUrl, request, Map.class);
 
-        cache.put("access_token", response.getBody().get("access_token").toString());
-        cache.put("instance_url", response.getBody().get("instance_url").toString());
-    }
+    cache.put("access_token", response.getBody().get("access_token").toString());
+    cache.put("instance_url", response.getBody().get("instance_url").toString());
+}
+//     public void getAccessToken(String code) {
+
+//         HttpHeaders headers = new HttpHeaders();
+//         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+//         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+
+//         body.add("grant_type", "authorization_code");
+//         body.add("client_id", clientId);
+//         body.add("client_secret", clientSecret);
+//         body.add("redirect_uri", redirectUri);
+//         body.add("code", code);
+
+//         HttpEntity<MultiValueMap<String, String>> request =
+//                 new HttpEntity<>(body, headers);
+
+//         ResponseEntity<Map> response =
+//                 restTemplate.postForEntity(tokenUrl, request, Map.class);
+
+//         cache.put("access_token", response.getBody().get("access_token").toString());
+//         cache.put("instance_url", response.getBody().get("instance_url").toString());
+//     }
 
     // ---------------- RULES ----------------
 
