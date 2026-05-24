@@ -378,57 +378,34 @@ public class AuthController {
     // ---------------- LOGIN ----------------
 
     @GetMapping("/api/login")
-public void login(HttpServletResponse response) throws Exception {
+    public void login(HttpServletResponse response) throws Exception {
 
-    String codeVerifier = generateCodeVerifier();
-    String codeChallenge = generateCodeChallenge(codeVerifier);
+        String codeVerifier = generateCodeVerifier();
+        String codeChallenge = generateCodeChallenge(codeVerifier);
 
-    String cookie =
-            "code_verifier=" + codeVerifier +
-            "; Path=/" +
-            "; HttpOnly" +
-            "; Secure" +
-            "; SameSite=None";
+        String cookie =
+                "code_verifier=" + codeVerifier +
+                "; Path=/" +
+                "; HttpOnly" +
+                "; Secure" +
+                "; SameSite=None";
 
-    response.addHeader("Set-Cookie", cookie);
+        response.addHeader("Set-Cookie", cookie);
 
-    String loginUrl =
-            authUrl +
-                    "?response_type=code" +
-                    "&client_id=" + clientId +
-                    "&redirect_uri=" +
-                    URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
-                    "&code_challenge=" + codeChallenge +
-                    "&code_challenge_method=S256";
+        String loginUrl =
+                authUrl +
+                        "?response_type=code" +
+                        "&client_id=" + clientId +
+                        "&redirect_uri=" +
+                        URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
+                        "&code_challenge=" + codeChallenge +
+                        "&code_challenge_method=S256";
 
-    response.sendRedirect(loginUrl);
-    System.out.println("LOGIN API HIT");
-System.out.println(loginUrl);
-}
-    // @GetMapping("/api/login")
-    // public void login(HttpServletResponse response) throws Exception {
+        System.out.println("LOGIN API HIT");
+        System.out.println(loginUrl);
 
-    //     String codeVerifier = generateCodeVerifier();
-    //     String codeChallenge = generateCodeChallenge(codeVerifier);
-
-    //     // Secure cookie (required for Render HTTPS)
-    //     Cookie cookie = new Cookie("code_verifier", codeVerifier);
-    //     cookie.setHttpOnly(true);
-    //     cookie.setSecure(true);
-    //     cookie.setPath("/");
-    //     response.addCookie(cookie);
-
-    //     String loginUrl =
-    //             authUrl +
-    //                     "?response_type=code" +
-    //                     "&client_id=" + clientId +
-    //                     "&redirect_uri=" +
-    //                     URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
-    //                     "&code_challenge=" + codeChallenge +
-    //                     "&code_challenge_method=S256";
-
-    //     response.sendRedirect(loginUrl);
-    // }
+        response.sendRedirect(loginUrl);
+    }
 
     // ---------------- CALLBACK ----------------
 
@@ -441,6 +418,7 @@ System.out.println(loginUrl);
         String codeVerifier = null;
 
         Cookie[] cookies = request.getCookies();
+
         if (cookies != null) {
             for (Cookie c : cookies) {
                 if ("code_verifier".equals(c.getName())) {
@@ -450,26 +428,32 @@ System.out.println(loginUrl);
         }
 
         if (codeVerifier == null) {
+
             response.sendRedirect(
                     "https://salesforce-frontend-41ny.onrender.com?error=session_lost"
             );
+
             return;
         }
+
+        System.out.println("CALLBACK HIT");
+        System.out.println(code);
 
         salesforceService.getAccessToken(code, codeVerifier);
 
         response.sendRedirect(
                 "https://salesforce-frontend-41ny.onrender.com"
         );
-        System.out.println("CALLBACK HIT");
-System.out.println(code);
     }
 
     // ---------------- RULES ----------------
 
     @GetMapping("/api/validation-rules")
     public ResponseEntity<?> getRules() {
-        return ResponseEntity.ok(salesforceService.getValidationRules());
+
+        return ResponseEntity.ok(
+                salesforceService.getValidationRules()
+        );
     }
 
     // ---------------- TOGGLE ----------------
@@ -482,20 +466,34 @@ System.out.println(code);
         return ResponseEntity.ok(
                 salesforceService.toggleValidationRule(id, active)
         );
-        System.out.println(response.getBody());
     }
 
     // ---------------- PKCE HELPERS ----------------
 
     private String generateCodeVerifier() {
+
         byte[] bytes = new byte[32];
+
         new SecureRandom().nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+
+        return Base64.getUrlEncoder()
+                .withoutPadding()
+                .encodeToString(bytes);
     }
 
-    private String generateCodeChallenge(String codeVerifier) throws Exception {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hash = digest.digest(codeVerifier.getBytes(StandardCharsets.UTF_8));
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
+    private String generateCodeChallenge(String codeVerifier)
+            throws Exception {
+
+        MessageDigest digest =
+                MessageDigest.getInstance("SHA-256");
+
+        byte[] hash =
+                digest.digest(
+                        codeVerifier.getBytes(StandardCharsets.UTF_8)
+                );
+
+        return Base64.getUrlEncoder()
+                .withoutPadding()
+                .encodeToString(hash);
     }
 }
