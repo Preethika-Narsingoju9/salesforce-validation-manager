@@ -17,7 +17,7 @@ function App() {
 
   // ---------------- LOGIN ----------------
   const loginToSalesforce = () => {
-    window.location.href = `${API_BASE}/api/salesforce-login`;
+    window.location.href = `${API_BASE}/api/login`;
   };
 
   // ---------------- GET RULES ----------------
