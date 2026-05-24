@@ -377,7 +377,7 @@ public class AuthController {
 
     // ---------------- LOGIN ----------------
 
-    @GetMapping("/api/login")
+    @GetMapping("/api/salesforce-login")
     public void login(HttpServletResponse response) throws Exception {
 
         String codeVerifier = generateCodeVerifier();
