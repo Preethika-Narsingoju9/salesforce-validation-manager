@@ -378,29 +378,57 @@ public class AuthController {
     // ---------------- LOGIN ----------------
 
     @GetMapping("/api/login")
-    public void login(HttpServletResponse response) throws Exception {
+public void login(HttpServletResponse response) throws Exception {
 
-        String codeVerifier = generateCodeVerifier();
-        String codeChallenge = generateCodeChallenge(codeVerifier);
+    String codeVerifier = generateCodeVerifier();
+    String codeChallenge = generateCodeChallenge(codeVerifier);
 
-        // Secure cookie (required for Render HTTPS)
-        Cookie cookie = new Cookie("code_verifier", codeVerifier);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        response.addCookie(cookie);
+    String cookie =
+            "code_verifier=" + codeVerifier +
+            "; Path=/" +
+            "; HttpOnly" +
+            "; Secure" +
+            "; SameSite=None";
 
-        String loginUrl =
-                authUrl +
-                        "?response_type=code" +
-                        "&client_id=" + clientId +
-                        "&redirect_uri=" +
-                        URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
-                        "&code_challenge=" + codeChallenge +
-                        "&code_challenge_method=S256";
+    response.addHeader("Set-Cookie", cookie);
 
-        response.sendRedirect(loginUrl);
-    }
+    String loginUrl =
+            authUrl +
+                    "?response_type=code" +
+                    "&client_id=" + clientId +
+                    "&redirect_uri=" +
+                    URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
+                    "&code_challenge=" + codeChallenge +
+                    "&code_challenge_method=S256";
+
+    response.sendRedirect(loginUrl);
+    System.out.println("LOGIN API HIT");
+System.out.println(loginUrl);
+}
+    // @GetMapping("/api/login")
+    // public void login(HttpServletResponse response) throws Exception {
+
+    //     String codeVerifier = generateCodeVerifier();
+    //     String codeChallenge = generateCodeChallenge(codeVerifier);
+
+    //     // Secure cookie (required for Render HTTPS)
+    //     Cookie cookie = new Cookie("code_verifier", codeVerifier);
+    //     cookie.setHttpOnly(true);
+    //     cookie.setSecure(true);
+    //     cookie.setPath("/");
+    //     response.addCookie(cookie);
+
+    //     String loginUrl =
+    //             authUrl +
+    //                     "?response_type=code" +
+    //                     "&client_id=" + clientId +
+    //                     "&redirect_uri=" +
+    //                     URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
+    //                     "&code_challenge=" + codeChallenge +
+    //                     "&code_challenge_method=S256";
+
+    //     response.sendRedirect(loginUrl);
+    // }
 
     // ---------------- CALLBACK ----------------
 
@@ -433,6 +461,8 @@ public class AuthController {
         response.sendRedirect(
                 "https://salesforce-frontend-41ny.onrender.com"
         );
+        System.out.println("CALLBACK HIT");
+System.out.println(code);
     }
 
     // ---------------- RULES ----------------
@@ -452,6 +482,7 @@ public class AuthController {
         return ResponseEntity.ok(
                 salesforceService.toggleValidationRule(id, active)
         );
+        System.out.println(response.getBody());
     }
 
     // ---------------- PKCE HELPERS ----------------

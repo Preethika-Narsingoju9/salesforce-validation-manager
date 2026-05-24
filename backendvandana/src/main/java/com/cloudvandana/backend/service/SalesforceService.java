@@ -217,7 +217,12 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class SalesforceService {
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    // private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
+
+public SalesforceService(RestTemplate restTemplate) {
+    this.restTemplate = restTemplate;
+}
 
     private final Map<String, String> cache = new ConcurrentHashMap<>();
 
@@ -282,26 +287,6 @@ public class SalesforceService {
 
     // ---------------- RULES ----------------
 
-//     public Map getValidationRules() {
-
-//         String url = cache.get("instance_url")
-//                 + "/services/data/v62.0/tooling/query/?q="
-//                 + "SELECT+Id,Name,Active+FROM+ValidationRule+LIMIT+50";
-
-//         HttpHeaders headers = new HttpHeaders();
-//         headers.setBearerAuth(cache.get("access_token"));
-
-//         HttpEntity<String> entity = new HttpEntity<>(headers);
-
-//         ResponseEntity<Map> response = restTemplate.exchange(
-//                 url,
-//                 HttpMethod.GET,
-//                 entity,
-//                 Map.class
-//         );
-
-//         return response.getBody();
-//     }
 public Map getValidationRules() {
 
     String url = cache.get("instance_url")
@@ -320,8 +305,39 @@ public Map getValidationRules() {
             Map.class
     );
 
-    return response.getBody();
+    Map body = response.getBody();
+
+    // ✅ FIX: rename ValidationName → Name for frontend
+    if (body != null && body.get("records") != null) {
+        var records = (java.util.List<Map>) body.get("records");
+
+        for (Map r : records) {
+            r.put("Name", r.get("ValidationName"));
+        }
+    }
+
+    return body;
 }
+// public Map getValidationRules() {
+
+//     String url = cache.get("instance_url")
+//             + "/services/data/v62.0/tooling/query/?q="
+//             + "SELECT+Id,ValidationName,Active+FROM+ValidationRule+LIMIT+50";
+
+//     HttpHeaders headers = new HttpHeaders();
+//     headers.setBearerAuth(cache.get("access_token"));
+
+//     HttpEntity<String> entity = new HttpEntity<>(headers);
+
+//     ResponseEntity<Map> response = restTemplate.exchange(
+//             url,
+//             HttpMethod.GET,
+//             entity,
+//             Map.class
+//     );
+
+//     return response.getBody();
+// }
 
     // ---------------- TOGGLE ----------------
 

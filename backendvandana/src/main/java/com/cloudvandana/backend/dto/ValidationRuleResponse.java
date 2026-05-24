@@ -4,11 +4,7 @@ import java.util.List;
 
 import lombok.Data;
 
-// @Data
-// public class ValidationRuleResponse {
 
-//     private List<ValidationRule> records;
-// }
 
 @Data
 public class ValidationRuleResponse {
